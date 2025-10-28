@@ -4,9 +4,15 @@ Task 1 需求澄清
 
 输出：docs/design/requirments.md
 
-commit：
 
-- 
+
+Task2 数据采集
+
+描述：进行lme与上期所的数据采集
+
+输出：
+
+
 
 
 
