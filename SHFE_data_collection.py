@@ -18,33 +18,18 @@ from __future__ import annotations
 
 import argparse
 import io
-import numbers
 import sys
 import time
 from datetime import datetime
 from typing import Any, Dict, Optional
 
 import akshare as ak
-import numpy as np
 import pandas as pd
+
+from collection_data_utils import STANDARD_FIELDS, build_standard_record
 
 # Ensure UTF-8 stdout for readable Chinese if present in data.
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-
-STANDARD_FIELDS = (
-    "date",
-    "contract",
-    "open",
-    "high",
-    "low",
-    "close",
-    "volume",
-    "open_interest",
-    "settlement",
-    "source",
-    "elapsed_seconds",
-)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -56,56 +41,6 @@ def _parse_date(date_str: str) -> datetime:
         return datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError as exc:
         raise ValueError(f"Invalid date '{date_str}'. Expected format yyyy-mm-dd.") from exc
-
-
-def _to_float(value: Any) -> Optional[float]:
-    """Convert supported numeric representations into float."""
-    if value is None:
-        return None
-    if isinstance(value, numbers.Real) or isinstance(value, np.number):
-        return float(value)
-    if isinstance(value, str):
-        stripped = value.strip()
-        if not stripped:
-            return None
-        try:
-            return float(stripped.replace(",", ""))
-        except ValueError:
-            return None
-    if isinstance(value, pd.Series) and not value.empty:
-        return _to_float(value.iloc[0])
-    return None
-
-
-def _standardize_result(
-    *,
-    date_str: str,
-    contract: Optional[str],
-    open_price: Any,
-    high_price: Any,
-    low_price: Any,
-    close_price: Any,
-    volume: Any,
-    open_interest: Any,
-    settlement: Any,
-    source: str,
-    elapsed_seconds: Optional[float],
-) -> Dict[str, Optional[Any]]:
-    """Return a normalized dictionary with aligned keys."""
-    result: Dict[str, Optional[Any]] = {
-        "date": date_str,
-        "contract": contract or "",
-        "open": _to_float(open_price),
-        "high": _to_float(high_price),
-        "low": _to_float(low_price),
-        "close": _to_float(close_price),
-        "volume": _to_float(volume),
-        "open_interest": _to_float(open_interest),
-        "settlement": _to_float(settlement),
-        "source": source,
-        "elapsed_seconds": round(float(elapsed_seconds), 4) if isinstance(elapsed_seconds, numbers.Real) else None,
-    }
-    return result
 
 
 def _print_result(label: str, data: Optional[Dict[str, Optional[Any]]]) -> None:
@@ -167,7 +102,7 @@ def _fetch_sina_history(date_str: str) -> Optional[Dict[str, Optional[Any]]]:
         return None
 
     row = day_df.iloc[-1]
-    return _standardize_result(
+    return build_standard_record(
         date_str=date_str,
         contract=str(row.get("contract", "NI_main")),
         open_price=row.get("open"),
@@ -213,7 +148,7 @@ def _fetch_shfe_realtime(date_str: str) -> Optional[Dict[str, Optional[Any]]]:
     elif "settlement" in row.index:
         settlement = row.get("settlement")
 
-    return _standardize_result(
+    return build_standard_record(
         date_str=date_str,
         contract=str(row.get("symbol", "")),
         open_price=row.get("open"),
