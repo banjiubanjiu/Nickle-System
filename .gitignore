@@ -63,3 +63,7 @@ dmypy.json
 # System files
 .DS_Store
 Thumbs.db
+
+# Local data/log artifacts
+storage/
+logs/
