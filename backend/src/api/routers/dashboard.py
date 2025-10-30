@@ -10,6 +10,7 @@ from backend.src.api.models import APIResponse, DailyRecord, IntradaySnapshot
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 
+# Localised labels used by the frontend to render human-friendly column names.
 INTRADAY_LABELS: Dict[str, str] = {
     "exchange": "交易所",
     "contract": "合约",
@@ -51,11 +52,13 @@ DAILY_LABELS: Dict[str, str] = {
 
 
 def _serialise_intraday(record: Dict[str, Any]) -> IntradaySnapshot:
+    """Project raw storage records into the public intraday response model."""
     payload = {key: record.get(key) for key in IntradaySnapshot.model_fields.keys()}
     return IntradaySnapshot.model_validate(payload)
 
 
 def _serialise_daily(record: Dict[str, Any]) -> DailyRecord:
+    """Project raw storage records into the public daily response model."""
     payload = {key: record.get(key) for key in DailyRecord.model_fields.keys()}
     return DailyRecord.model_validate(payload)
 
@@ -65,6 +68,7 @@ def get_latest_snapshot(
     exchange: str = Query("lme", description="交易所标识，如 lme / shfe"),
     intraday=Depends(get_intraday_reader),
 ) -> APIResponse:
+    """Return the freshest intraday record for the requested exchange."""
     record = intraday["get_latest_intraday"](exchange)
     if record is None:
         raise HTTPException(status_code=404, detail=f"No intraday data for exchange '{exchange}'")
@@ -83,6 +87,7 @@ def list_intraday_snapshots(
     limit: int = Query(30, ge=1, le=500, description="返回条数"),
     intraday=Depends(get_intraday_reader),
 ) -> APIResponse:
+    """Return a bounded list of intraday snapshots ordered from newest to oldest."""
     records = intraday["list_intraday"](exchange, limit=limit)
     data = [_serialise_intraday(record).model_dump() for record in records]
     return APIResponse(
@@ -99,6 +104,7 @@ def list_daily_records(
     end_date: Optional[str] = Query(None, description="结束日期 (YYYY-MM-DD)"),
     daily=Depends(get_daily_reader),
 ) -> APIResponse:
+    """Return historical day-level records for the provided date range."""
     records = daily["list_daily"](exchange, start_date=start_date, end_date=end_date)
     data = [_serialise_daily(record).model_dump() for record in records]
     return APIResponse(

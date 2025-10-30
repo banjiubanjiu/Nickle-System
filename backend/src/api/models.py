@@ -7,12 +7,16 @@ from pydantic import BaseModel, Field
 
 
 class APIResponse(BaseModel):
+    """Standard envelope for JSON responses returned by this API."""
+
     data: Any
     meta: Dict[str, Any] = Field(default_factory=dict)
     error: Optional[str] = None
 
 
 class IntradaySnapshot(BaseModel):
+    """Schema describing a single intraday snapshot as surfaced to clients."""
+
     id: Optional[int] = None
     exchange: str
     contract: str
@@ -36,6 +40,8 @@ class IntradaySnapshot(BaseModel):
 
 
 class DailyRecord(BaseModel):
+    """Schema for a day-level aggregation of nickel market data."""
+
     id: Optional[int] = None
     exchange: str
     contract: str
@@ -51,4 +57,3 @@ class DailyRecord(BaseModel):
     volume: Optional[float] = None
     open_interest: Optional[float] = None
     elapsed_seconds: Optional[float] = None
-

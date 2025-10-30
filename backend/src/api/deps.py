@@ -26,10 +26,12 @@ def init_storage() -> None:
 
 
 def ensure_storage():
+    """Guarantee that database schema is initialised before any storage access."""
     init_storage()
 
 
 def get_intraday_reader():
+    """Provide a bundle of intraday storage helpers for FastAPI dependency injection."""
     ensure_storage()
     return {
         "get_latest_intraday": get_latest_intraday,
@@ -39,6 +41,7 @@ def get_intraday_reader():
 
 
 def get_daily_reader():
+    """Provide read-only accessors for historical daily market data."""
     ensure_storage()
     return {
         "list_daily": list_daily,

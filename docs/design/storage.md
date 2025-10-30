@@ -1,71 +1,87 @@
-# Storage Layer Plan
+# 数据存储设计说明
 
-## Goals
-- Provide a stable local data source so the dashboard and AI modules do not rely on live third-party calls.
-- Preserve both real-time snapshots and historical data to support trend analysis and automated reports (daily, weekly, monthly).
-- Start with SQLite for the MVP but keep the design ready to swap to PostgreSQL later with minimal changes.
+## 1. 设计目标
+- 为调度器 / API / 前端提供统一的数据源；
+- 支撑实时与日线数据查询、快速恢复、后续指标扩展；
+- 便于将来迁移至 PostgreSQL 或其他存储。
 
-## Design Principles
-1. **Separate by time granularity**: one table for intraday snapshots, one table for daily aggregates. This mirrors the difference between dashboard updates and report preparation, and it keeps retention/cleanup simple.
-2. **Share schema across exchanges**: both LME and SHFE data live in the same tables, identified by an `exchange` column. Most price/volume fields are common; optional values stay nullable or move to an `extras` JSON payload.
-3. **Single repository layer**: all database access goes through a dedicated module so a future storage backend can be swapped without touching collectors, APIs, or report logic.
+## 2. 数据模型
 
-## Data Model (MVP)
-| Table | Purpose | Key Columns (examples) |
+### 2.1 实时快照表 `intraday_snapshots`
+| 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| intraday_snapshots | Stores every snapshot fetched during trading hours; feeds the dashboard. | id, captured_at (local timestamp), exchange (lme, shfe, ...), source_detail (lme_realtime, shfe_realtime), contract, quote_date, latest_price, open, high, low, close, settlement, prev_settlement, volume, open_interest, bid, ask, change, change_pct, tick_time (nullable for LME), elapsed_seconds, extras (JSON string, optional) |
-| daily_market_data | Holds daily-level data used for reports and historical charts. | id, trade_date, exchange, source_detail (lme_history, shfe_history, sina_history), contract, open, high, low, close, settlement, prev_settlement, change, change_pct, volume, open_interest, elapsed_seconds, extras |
+| `id` | INTEGER, PK | 自增 ID |
+| `captured_at` | TEXT (ISO8601) | 调度器抓取时间（UTC） |
+| `exchange` | TEXT | `lme` / `shfe` 等交易所标识 |
+| `source_detail` | TEXT | 数据来源，如 `lme_realtime` |
+| `contract` | TEXT | 合约代码，例如 `LME_3M`、`NI0` |
+| `quote_date` | TEXT | 行情日期（源接口返回） |
+| `latest_price` 等 | REAL | 价格、成交量、持仓量、涨跌额/幅等字段 |
+| `tick_time` | TEXT | 源接口返回的 tick 时间（若有） |
+| `elapsed_seconds` | REAL | 采集用时，可用于监控 |
+| `extras` | TEXT(JSON) | 额外字段，以 JSON 字符串保存 |
+| `created_at` / `updated_at` | TEXT | 冗余存储，便于审计（UTC, ISO8601） |
 
-Additional notes:
-- Both tables include created_at and updated_at timestamps (populated by the repository) for auditing and housekeeping.
-- Use generic SQLite-friendly types (INTEGER, REAL, TEXT) so the schema ports cleanly to PostgreSQL.
-- extras allows temporary storage of exchange-specific data; it can be normalized later if needed.
+索引：`(exchange, captured_at)`，便于获取最新记录。
 
-## Rationale for the Structure
-- **Dashboard vs. reports**: real-time views need the freshest intraday records, while reports aggregate daily figures. Splitting the tables keeps queries and retention policies focused.
-- **Exchange agnostic**: the exchange flag keeps queries unified (e.g., comparing LME vs. SHFE prices) while still letting the UI filter on demand.
-- **Extensible**: new exchanges or data providers can reuse the same tables by introducing new exchange or source_detail values.
+### 2.2 日线数据表 `daily_market_data`
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | INTEGER, PK |
+| `trade_date` | TEXT | 交易日（YYYY-MM-DD） |
+| `exchange` / `source_detail` / `contract` | TEXT |
+| `open` / `high` / `low` / `close` | REAL |
+| `settlement` / `prev_settlement` | REAL |
+| `change` / `change_pct` | REAL |
+| `volume` / `open_interest` | REAL |
+| `elapsed_seconds` | REAL |
+| `extras` | TEXT(JSON) |
+| `created_at` / `updated_at` | TEXT |
 
-## Data Flow Overview
-1. Collectors invoke the repository: save_intraday_snapshot(exchange, contract, payload) after each realtime fetch; call save_daily_market_data(...) when a historical batch is retrieved.
-2. The repository validates input, ensures tables exist, writes rows, and returns identifiers or status.
-3. Dashboard/API modules request recent intraday snapshots via repository methods (for example, get_latest_snapshot(exchange) or list_intraday(exchange, since)).
-4. Reporting and AI jobs query daily_market_data, perform their aggregations, and optionally cache rendered text elsewhere.
-5. Cleanup/retention policies (such as pruning old intraday rows) can be implemented inside the repository without touching business logic.
+复合唯一键：`(exchange, contract, trade_date, source_detail)`，插入时使用 `ON CONFLICT ... DO UPDATE` 以支持幂等。
 
-## Repository Layer Expectations
-- Suggested module layout:
-  - `storage/config.py` – load environment variables (`DATABASE_URL`, retention hours, logging level) with sensible defaults (e.g., `sqlite:///storage/data.db`).
-  - `storage/models.py` – define `TypedDict` structures for intraday/daily payloads to keep interfaces self-documented.
-  - `storage/repository.py` – expose the public API for other layers.
-- On module import, initialize the connection (`sqlite3.connect(path, check_same_thread=False)`) and run idempotent table-creation SQL; use a module-level connection guarded by a lock to support multi-threaded readers.
-- Expose typed functions for the main operations:
-  - `init_db()` – ensure schema exists.
-  - `save_intraday_snapshot(exchange, contract, payload)` – insert realtime rows.
-  - `save_daily_market_data(exchange, trade_date, payload)` – insert daily aggregates.
-  - `get_latest_intraday(exchange)` / `list_intraday(exchange, limit)` – serve API consumers.
-  - `list_daily(exchange, start_date, end_date)` – feed charting/report jobs.
-  - `cleanup_intraday(before_timestamp)` – remove rows older than the retention window.
-- Keep all SQL statements parameterized and contained within the repository; other modules never issue direct SQL.
-- Attach a module-level logger (e.g., `nickel.storage`) to record schema initialization, insert failures, and cleanup summaries; errors bubble up as custom `StorageError` exceptions so callers can handle them consistently.
-- Read configuration (database path, retention hours, etc.) from environment variables or config files so switching to PostgreSQL only changes one setting; surface helper functions such as `get_database_url()` and `get_retention_hours()` for reuse in schedulers/tests.
+索引：`(exchange, trade_date)`。
 
-## Configuration & Logging
-- `.env` keys:
-  - `DATABASE_URL` – defaults to `sqlite:///storage/data.db`.
-  - `INTRADAY_RETENTION_HOURS` – defaults to `24`.
-  - `LOG_LEVEL` – defaults to `INFO`.
-- Logging convention: use Python’s `logging` module with daily rotating file handlers writing to `logs/storage.log`; include fields `timestamp | level | exchange | action | message`.
+## 3. 清理与保留策略
+- 实时快照默认保留 **24 小时**（`NICKEL_INTRADAY_RETENTION_HOURS`），调度器每次采集成功后调用 `cleanup_intraday` 删除过期数据。
+- 日线数据默认长期保留，体量较小；迁移到 PostgreSQL 后可考虑历史归档策略。
 
-## Migration Path to PostgreSQL
-1. Replace the SQLite connection with a PostgreSQL driver (psycopg2 or SQLAlchemy engine) using the same repository interface.
-2. Adjust table creation SQL for PostgreSQL data types and indexes (e.g., TIMESTAMP WITH TIME ZONE).
-3. Export existing SQLite data if needed and import into PostgreSQL.
-4. Re-run repository smoke tests; business code should not require changes.
+## 4. 配置项
+均通过 `.env` 或环境变量注入，代码统一调用 `backend.src.storage.config`：
 
-## Implementation Steps
-1. Finalize schemas in this document and agree on column names.
-2. Implement the repository module with SQLite: connection management, table creation, insert/query helpers.
-3. Update collectors to call the repository instead of printing or writing raw data elsewhere.
-4. Build lightweight tests or scripts to verify inserts and queries for both tables.
-5. Document backup/export instructions to smooth the future migration to PostgreSQL.
+| 变量 | 默认值 | 用途 |
+| --- | --- | --- |
+| `NICKEL_DATABASE_URL` | `sqlite:///storage/data.db` | 指定数据库位置，可替换为 PostgreSQL |
+| `NICKEL_INTRADAY_RETENTION_HOURS` | `24` | 实时数据保留时长 |
+| `NICKEL_INTRADAY_INTERVAL_SECONDS` | `30` | 调度器实时采集间隔（调度层共用） |
+| `NICKEL_DAILY_RUN_HOUR/MINUTE` | `18/10` | 日线采集执行时间 |
+| `NICKEL_MAX_RETRIES` | `1` | 调度器失败重试次数 |
+| `NICKEL_LOG_LEVEL` | `INFO` | storage / scheduler 日志级别 |
+
+## 5. 关键接口（`backend/src/storage/__init__.py`）
+- 初始化：`init_db()`；
+- 写入：`save_intraday_snapshot(payload)`、`save_daily_market_data(payload)`；
+- 查询：`get_latest_intraday(exchange)`、`list_intraday(exchange, limit)`、`list_daily(exchange, start_date, end_date)`；
+- 清理：`cleanup_intraday(before_timestamp=None, retention_hours=None)`。
+
+输入格式使用 `TypedDict`（`IntradaySnapshotPayload`、`DailyMarketPayload`），采集桥接层负责映射。
+
+## 6. 迁移到 PostgreSQL 的建议
+1. 调整 `.env` 的 `NICKEL_DATABASE_URL` 为 PostgreSQL 连接串；
+2. 使用 `psycopg2` 或 SQLAlchemy 创建连接（当前实现基于 sqlite3，可重构为 SQLAlchemy 以兼容多种数据库）；
+3. 重写 `_resolve_sqlite_path` 等 sqlite 专属逻辑；
+4. 重新执行建表脚本，必要时将 `REAL` / `TEXT` 映射为合适的 PostgreSQL 类型；
+5. 通过 CSV/脚本导出 sqlite 数据并导入 PostgreSQL；
+6. 重新运行调度器与 API，确认 CRUD 与索引行为正确。
+
+## 7. 日志与排错
+- 存储层使用 `nickel.storage` 日志；文件位于 `logs/storage.log`，按天滚动；
+- 记录事件：连接成功/失败、插入异常、清理结果；
+- 调度层在写库失败时会捕获 `StorageError` 并重试或直接记录错误，方便定位问题。
+
+## 8. 与 API 的衔接
+- API 中的 `/api/v1/dashboard/*` 接口直接调用 `list_intraday`、`list_daily` 等函数；
+- 响应中附带 `labels` 字段，用来在前端或调用者侧显示中文名称；
+- 如需新增字段，只要在存储层和模型中同步即可；API 响应会自动包含新字段。
+
+> 本文与《设计概览（pr.md）》配合使用，如需了解总体架构，请查阅该文档；如果数据库结构有变更、或需要支持更多指标，请在此文件中同步说明。

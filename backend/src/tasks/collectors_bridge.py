@@ -22,10 +22,12 @@ class CollectorError(RuntimeError):
 
 
 def _now_utc() -> datetime:
+    """Return the current UTC timestamp truncated to whole seconds."""
     return datetime.now(timezone.utc).replace(microsecond=0)
 
 
 def _coerce_float(value) -> Optional[float]:
+    """Convert collector payload values into floats, tolerating blanks."""
     if value in (None, "", "null"):
         return None
     try:
@@ -35,6 +37,7 @@ def _coerce_float(value) -> Optional[float]:
 
 
 def _prepare_intraday_payload(exchange: str, record: dict) -> IntradaySnapshotPayload:
+    """Normalise realtime collector output into the storage payload schema."""
     if not record:
         raise CollectorError(f"{exchange} realtime returned empty record")
     contract = record.get("contract") or ""
@@ -67,6 +70,7 @@ def _prepare_intraday_payload(exchange: str, record: dict) -> IntradaySnapshotPa
 
 
 def _prepare_daily_payload(exchange: str, record: dict) -> DailyMarketPayload:
+    """Normalise historical collector output into the storage payload schema."""
     if not record:
         raise CollectorError(f"{exchange} daily returned empty record")
     trade_date = record.get("date")
@@ -97,6 +101,7 @@ def _prepare_daily_payload(exchange: str, record: dict) -> DailyMarketPayload:
 
 
 def collect_lme_realtime() -> IntradaySnapshotPayload:
+    """Fetch LME realtime data and convert it into a storage-ready payload."""
     record = get_realtime_lme_nickel()
     if record is None:
         raise CollectorError("LME realtime returned None")
@@ -104,6 +109,7 @@ def collect_lme_realtime() -> IntradaySnapshotPayload:
 
 
 def collect_shfe_realtime() -> IntradaySnapshotPayload:
+    """Fetch SHFE realtime data and convert it into a storage-ready payload."""
     record = get_shfe_realtime()
     if record is None:
         raise CollectorError("SHFE realtime returned None")
@@ -111,6 +117,7 @@ def collect_shfe_realtime() -> IntradaySnapshotPayload:
 
 
 def collect_lme_daily(target_date: Optional[str] = None) -> DailyMarketPayload:
+    """Fetch LME daily data for the provided (or inferred) date and normalise it."""
     if target_date is None:
         target_date = (_now_utc() - timedelta(days=1)).date().isoformat()
     record = get_historical_lme_nickel(target_date)
@@ -121,6 +128,7 @@ def collect_lme_daily(target_date: Optional[str] = None) -> DailyMarketPayload:
 
 
 def collect_shfe_daily(target_date: Optional[str] = None) -> DailyMarketPayload:
+    """Fetch SHFE daily data for the provided (or inferred) date and normalise it."""
     if target_date is None:
         target_date = (_now_utc() - timedelta(days=1)).date().isoformat()
     record = get_shfe_historical(target_date)

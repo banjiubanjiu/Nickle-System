@@ -29,8 +29,10 @@ pip install -r requirements.txt
 NICKEL_DATABASE_URL=sqlite:///storage/data.db
 NICKEL_INTRADAY_RETENTION_HOURS=24
 NICKEL_INTRADAY_INTERVAL_SECONDS=30
-NICKEL_DAILY_RUN_HOUR=18
-NICKEL_DAILY_RUN_MINUTE=10
+NICKEL_SHFE_DAILY_HOUR=15
+NICKEL_SHFE_DAILY_MINUTE=1
+NICKEL_LME_DAILY_HOUR=3
+NICKEL_LME_DAILY_MINUTE=30
 NICKEL_MAX_RETRIES=1
 NICKEL_LOG_LEVEL=INFO
 ```
@@ -83,7 +85,7 @@ python -m backend.src.tasks.scheduler --once both       # 先实时后日线，�
 python -m backend.src.tasks.scheduler
 ```
 
-默认每 30 秒抓取实时数据，每天 18:10 抓取日线数据。日志输出到 `logs/scheduler.log` 和终端。
+默认每 30 秒抓取实时数据；日线任务分开调度：SHFE 在 15:01 执行、LME 在次日 03:30 执行。日志输出到 `logs/scheduler.log` 和终端。
 
 ### 一键启动（调度 + API）
 
