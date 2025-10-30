@@ -54,7 +54,7 @@ REALTIME_FIELDS = (
     "elapsed_seconds",
 )
 
-# Fields shown for历史日线记录（与 Sina 日度接口保持一致的核心指标）。
+# Fields shown for historical daily records (core indicators consistent with the Sina daily data interface).
 HISTORICAL_FIELDS = (
     "date",
     "contract",
@@ -179,7 +179,7 @@ def _build_realtime_record(
     }
 
 
-# Assemble dict for SHFE 历史日线数据（保持字段整洁）。
+# Assemble dict for SHFE historical daily data (keep field names clean).
 def _build_historical_record(
     *,
     date_str: str,
@@ -386,7 +386,7 @@ def _fetch_shfe_realtime(date_str: str) -> Optional[Dict[str, Optional[Any]]]:
         if prev_settlement_value:
             change_pct = (change / prev_settlement_value) * 100
     elif row.get("changepercent") not in (None, ""):
-        # Sina 可能直接返回涨跌幅（单位为小数），作为备选数据源。
+        # Sina may directly return the percentage change (in decimal form) as an alternative data source.
         change_pct = (
             row.get("changepercent") * 100
             if row.get("changepercent") not in (None, 0)
