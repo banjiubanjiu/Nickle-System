@@ -12,7 +12,7 @@ from swagger_ui_bundle import swagger_ui_path
 
 from backend.src.api.deps import ensure_storage, get_intraday_reader
 from backend.src.api.routers import dashboard
-from backend.src.storage import get_intraday_interval_seconds, get_retention_hours
+from backend.src.config import get_intraday_interval_seconds, get_retention_hours
 
 LOGGER = logging.getLogger("nickel.api")
 
