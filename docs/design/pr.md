@@ -30,8 +30,8 @@
 | 工具 | `run_all.py` | 一键启动调度器 + API，便于开发阶段快速体验。 |
 
 ## 4. 数据流程
-1. 调度器按配置（默认实时 30 秒、日线每日 18:10）调用采集函数。
-2. 采集结果映射为统一格式，写入 sqlite（`intraday_snapshots`、`daily_market_data`）。
+1. 调度器按配置运行：实时任务默认 30 秒一次；SHFE 日线在北京时间 15:01 执行，LME 日线在北京时间 03:30 执行。
+2. 采集结果映射为统一格式，写入 sqlite (`intraday_snapshots`、`daily_market_data`)。
 3. API 从存储层读取数据，对外返回标准结构的 JSON，提供中文字段标签。
 4. 前端或其他消费者定期调用 API 获取数据；AI 报告模块未来也将基于这些接口或直接拉库。
 
@@ -47,9 +47,9 @@
 响应统一为 `{ "data": ..., "meta": { labels, ... }, "error": null }`，字段名已与存储层一致，便于直接消费。
 
 ## 6. 配置与部署建议
-- **配置**：通过 `.env` 或环境变量配置数据库、调度频率、日志级别等；默认使用 `sqlite:///storage/data.db`，支持未来切换 PostgreSQL。
+- **配置**：仅通过 `.env` 配置文件设置数据库、调度频率、日志级别等；默认 `sqlite:///storage/data.db`，支持未来切换 PostgreSQL。
 - **开发**：`python run_all.py` 启动调度 + API，调试时可配合 `--no-reload` 等参数；`requirements.txt` 集中管理依赖。
-- **生产**：建议调度器和 API 独立进程运行，禁用 `--reload`，使用 systemd、Supervisor 或 Docker Compose 管理；数据库迁移至 PostgreSQL 以获更强一致性与并发能力。
+- **生产**：建议调度器与 API 独立进程运行，禁止 `--reload`，使用 systemd、Supervisor 或 Docker Compose 管理；数据库迁移至 PostgreSQL 以获得更强一致性与并发能力。
 
 ## 7. 后续路线
 | 优先级 | 项目 | 说明 |

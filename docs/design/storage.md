@@ -42,19 +42,20 @@
 
 索引：`(exchange, trade_date)`。
 
-## 3. 清理与保留策略
+## 3. 保留策略
 - 实时快照默认保留 **24 小时**（`NICKEL_INTRADAY_RETENTION_HOURS`），调度器每次采集成功后调用 `cleanup_intraday` 删除过期数据。
 - 日线数据默认长期保留，体量较小；迁移到 PostgreSQL 后可考虑历史归档策略。
 
-## 4. 配置项
-均通过 `.env` 或环境变量注入，代码统一调用 `backend.src.config`：
+## 4. 配置
+仅通过根目录 `.env` 文件注入配置，代码统一调用 `backend.src.config`。
 
 | 变量 | 默认值 | 用途 |
 | --- | --- | --- |
 | `NICKEL_DATABASE_URL` | `sqlite:///storage/data.db` | 指定数据库位置，可替换为 PostgreSQL |
 | `NICKEL_INTRADAY_RETENTION_HOURS` | `24` | 实时数据保留时长 |
-| `NICKEL_INTRADAY_INTERVAL_SECONDS` | `30` | 调度器实时采集间隔（调度层共用） |
-| `NICKEL_DAILY_RUN_HOUR/MINUTE` | `18/10` | 日线采集执行时间 |
+| `NICKEL_INTRADAY_INTERVAL_SECONDS` | `30` | 实时采集间隔（调度层共用） |
+| `NICKEL_SHFE_DAILY_HOUR/MINUTE` | `15/1` | SHFE 日线采集时间（北京时间） |
+| `NICKEL_LME_DAILY_HOUR/MINUTE` | `3/30` | LME 日线采集时间（北京时间） |
 | `NICKEL_MAX_RETRIES` | `1` | 调度器失败重试次数 |
 | `NICKEL_LOG_LEVEL` | `INFO` | storage / scheduler 日志级别 |
 
