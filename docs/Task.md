@@ -32,9 +32,11 @@ task4 后端实现
 
 
 
-task5 前端实现
+task5 前端技术选型
 
-描述：完成前端mvp设计与实现
+描述：完成前端mvp技术选型
+
+输出：mvp-front-plan
 
 
 

@@ -50,7 +50,6 @@ DAILY_LABELS: Dict[str, str] = {
     "elapsed_seconds": "耗时(秒)",
 }
 
-
 def _serialise_intraday(record: Dict[str, Any]) -> IntradaySnapshot:
     """Project raw storage records into the public intraday response model."""
     payload = {key: record.get(key) for key in IntradaySnapshot.model_fields.keys()}
