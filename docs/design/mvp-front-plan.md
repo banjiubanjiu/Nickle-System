@@ -50,22 +50,26 @@
 - 响应式：断点（1440/1280/768/375）、栅格/容器布局、触屏差异。
 - 文案与语气：标题层级、按钮/提示文案、多语言策略（如需）。
 
-## 技术选型建议
-A. 快速落地（新手友好，推荐）
-- React + Vite + TypeScript
-- UI 库：Ant Design
-- 路由：React Router
-- 数据：React Query（缓存/重试/错误边界）
-- 表单：React Hook Form + Zod
-- 规范：ESLint + Prettier + Husky + Lint-Staged
-- 测试：Vitest + Testing Library
+## 技术选型
+**框架**：Vue 3（Composition API, `<script setup>`）
 
-B. 高度定制（灵活但更难）
-- React + Vite + TypeScript
-- Tailwind CSS + Headless UI/Radix
-- 其余同上（Router/React Query/RHF/Zod）
+**语言**：TypeScript（保证类型安全与长期可维护）
 
-（Vue 备选：Vite + Vue 3 + TS + Vue Router + Vue Query + Pinia + Element Plus/Naive UI）
+**构建**：Vite（开发快、配置直观）
+
+**UI 组件库**：Ant Design Vue（企业级组件齐全、中文资料多）
+
+**可视化**：ECharts（大屏/时序/地图/仪表盘都强）；
+
+**HTTP 客户端**：Axios（拦截器、统一错误处理）
+
+**路由**：Vue Router（分模块、权限守卫）
+
+**国际化/本地化**：vue-i18n（中英文切换可选）
+
+**打包与包管理**：pnpm（更快更省空间）
+
+**质量与规范**：ESLint + Prettier + Husky + lint-staged
 
 ## 目录与路由约定（示例，React）
 - src/app：应用入口、主题、全局错误边界、Provider 注册
