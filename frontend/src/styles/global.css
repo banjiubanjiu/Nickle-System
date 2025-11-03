@@ -63,7 +63,7 @@ table {
   padding: 28px 40px 36px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
   max-width: 1760px;
   margin: 0 auto;
   width: 100%;
@@ -71,7 +71,7 @@ table {
 
 .grid {
   display: grid;
-  gap: 28px;
+  gap: 32px;
 }
 
 .grid.cols-4 {
@@ -178,7 +178,7 @@ table {
 .panels {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 28px;
+  gap: 32px;
   align-items: stretch;
 }
 
