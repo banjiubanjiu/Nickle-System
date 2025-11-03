@@ -227,12 +227,11 @@ table {
 .table {
   width: 100%;
   font-size: var(--font-size-body);
-  border-spacing: 0;
 }
 
 .table thead th {
   text-align: left;
-  padding: 16px 0;
+  padding: 12px 0;
   color: var(--dashboard-text-secondary);
   font-size: 18px;
   font-weight: 600;
@@ -240,10 +239,9 @@ table {
 }
 
 .table tbody td {
-  padding: 14px 0;
+  padding: 10px 0;
   color: rgba(232, 242, 255, 0.85);
   font-size: var(--font-size-body);
-  line-height: 1.6;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
