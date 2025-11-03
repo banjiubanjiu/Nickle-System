@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>镍金属期货实时数据大屏</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard">
+    <header class="dashboard__header">
+      <div class="title-block">
+        <h1>镍金属期货实时数据大屏</h1>
+        <span class="subtitle">LME / SHFE</span>
+      </div>
+      <div class="meta">
+        <span class="label">NICKEL-01</span>
+        <span class="timestamp">数据更新时间：2025/01/15 12:52:34</span>
+      </div>
+    </header>
+
+    <section class="row row--summary">
+      <article class="card card--primary overview">
+        <div class="overview__header">
+          <div>
+            <span class="tag">LME 3M</span>
+            <h2 class="overview__price">18,527.09 <small>美元/吨</small></h2>
+          </div>
+          <div class="overview__change positive">
+            <span class="value">+185.32</span>
+            <span class="percent">(+1.01%)</span>
+          </div>
+        </div>
+        <div class="overview__metrics">
+          <div class="metric">
+            <span class="metric__label">成交量</span>
+            <span class="metric__value">245,600 吨</span>
+          </div>
+          <div class="metric">
+            <span class="metric__label">持仓量</span>
+            <span class="metric__value">128,400 手</span>
+          </div>
+          <div class="metric">
+            <span class="metric__label">日内振幅</span>
+            <span class="metric__value">18532.09 - 18795.60</span>
+          </div>
+          <div class="metric">
+            <span class="metric__label">昨结算价</span>
+            <span class="metric__value">18,352.09</span>
+          </div>
+        </div>
+      </article>
+      <article class="card card--secondary latest">
+        <h3>最新价</h3>
+        <div class="latest__price">18,525.09</div>
+        <div class="latest__change positive">
+          <span class="arrow">▲</span>
+          <span class="value">+185.32</span>
+          <span class="percent">(+1.01%)</span>
+        </div>
+        <div class="latest__details">
+          <div>
+            <span class="label">昨收价</span>
+            <span class="value">18,339.77</span>
+          </div>
+          <div>
+            <span class="label">最高价</span>
+            <span class="value">18,795.60</span>
+          </div>
+          <div>
+            <span class="label">最低价</span>
+            <span class="value">18,352.09</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="row">
+      <article class="card chart-card kline">
+        <div class="card__header">
+          <h3>K线图（5分钟）</h3>
+          <span class="unit">美元/吨</span>
+        </div>
+        <canvas id="klineChart"></canvas>
+      </article>
+      <div class="column">
+        <article class="card orderbook">
+          <div class="card__header">
+            <h3>买卖盘深度</h3>
+            <span class="unit">手</span>
+          </div>
+          <div class="orderbook__body">
+            <div class="orderbook__side">
+              <span class="side-label">买盘</span>
+              <ul>
+                <li><span class="price">18,524.5</span><span class="volume volume--buy" style="width: 78%"></span><span class="quantity">45</span></li>
+                <li><span class="price">18,524.0</span><span class="volume volume--buy" style="width: 65%"></span><span class="quantity">36</span></li>
+                <li><span class="price">18,523.5</span><span class="volume volume--buy" style="width: 55%"></span><span class="quantity">28</span></li>
+                <li><span class="price">18,523.0</span><span class="volume volume--buy" style="width: 42%"></span><span class="quantity">19</span></li>
+                <li><span class="price">18,522.5</span><span class="volume volume--buy" style="width: 30%"></span><span class="quantity">12</span></li>
+              </ul>
+            </div>
+            <div class="orderbook__side">
+              <span class="side-label">卖盘</span>
+              <ul>
+                <li><span class="price">18,525.0</span><span class="volume volume--sell" style="width: 80%"></span><span class="quantity">48</span></li>
+                <li><span class="price">18,525.5</span><span class="volume volume--sell" style="width: 68%"></span><span class="quantity">39</span></li>
+                <li><span class="price">18,526.0</span><span class="volume volume--sell" style="width: 58%"></span><span class="quantity">31</span></li>
+                <li><span class="price">18,526.5</span><span class="volume volume--sell" style="width: 45%"></span><span class="quantity">22</span></li>
+                <li><span class="price">18,527.0</span><span class="volume volume--sell" style="width: 35%"></span><span class="quantity">14</span></li>
+              </ul>
+            </div>
+          </div>
+        </article>
+        <article class="card ticker">
+          <div class="card__header">
+            <h3>实时成交</h3>
+            <span class="unit">最新挂单</span>
+          </div>
+          <ul class="ticker__list">
+            <li><span class="time">12:51:26</span><span class="price">18,525.0</span><span class="volume">5</span><span class="type type--buy">买入</span></li>
+            <li><span class="time">12:51:11</span><span class="price">18,524.5</span><span class="volume">7</span><span class="type type--sell">卖出</span></li>
+            <li><span class="time">12:50:59</span><span class="price">18,524.0</span><span class="volume">4</span><span class="type type--buy">买入</span></li>
+            <li><span class="time">12:50:45</span><span class="price">18,523.5</span><span class="volume">11</span><span class="type type--sell">卖出</span></li>
+            <li><span class="time">12:50:29</span><span class="price">18,523.0</span><span class="volume">9</span><span class="type type--buy">买入</span></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="row">
+      <article class="card chart-card trend">
+        <div class="card__header">
+          <h3>波动率指数</h3>
+          <span class="unit">%</span>
+        </div>
+        <canvas id="volatilityChart"></canvas>
+      </article>
+      <article class="card summary">
+        <div class="card__header">
+          <h3>成交额 &amp; 持仓</h3>
+          <span class="unit">万元</span>
+        </div>
+        <div class="summary__grid">
+          <div>
+            <span class="label">当日成交额</span>
+            <span class="value">184,500 万元</span>
+          </div>
+          <div>
+            <span class="label">当日持仓额</span>
+            <span class="value">186,200 万元</span>
+          </div>
+          <div>
+            <span class="label">昨日持仓额</span>
+            <span class="value">184,200 万元</span>
+          </div>
+          <div>
+            <span class="label">周均成交额</span>
+            <span class="value">184,700 万元</span>
+          </div>
+        </div>
+      </article>
+      <article class="card futures">
+        <div class="card__header">
+          <h3>沪镍主力合约</h3>
+          <span class="unit">元/吨</span>
+        </div>
+        <ul class="futures__list">
+          <li><span class="contract">Ni2403</span><span class="price">145,200</span><span class="change positive">+1.24%</span></li>
+          <li><span class="contract">Ni2404</span><span class="price">146,580</span><span class="change positive">+0.88%</span></li>
+          <li><span class="contract">Ni2405</span><span class="price">147,010</span><span class="change negative">-0.12%</span></li>
+          <li><span class="contract">Ni2406</span><span class="price">147,320</span><span class="change positive">+0.37%</span></li>
+          <li><span class="contract">Ni2409</span><span class="price">148,050</span><span class="change positive">+0.95%</span></li>
+        </ul>
+      </article>
+    </section>
+
+    <footer class="dashboard__footer">
+      <span>数据来源：LME / SHFE（模拟数据）</span>
+      <span>最后刷新时间：2025/01/15 12:52:34</span>
+    </footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
