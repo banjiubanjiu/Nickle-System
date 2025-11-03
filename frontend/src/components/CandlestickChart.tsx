@@ -52,14 +52,18 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
       localization: {
         priceFormatter: (price: number) => price.toFixed(2),
       },
+      watermark: {
+        visible: false,
+      },
     });
 
     const candleSeries = chart.addCandlestickSeries({
       upColor: "#ff6b6b",
       downColor: "#4ecdc4",
+      borderUpColor: "#ff6b6b",
+      borderDownColor: "#4ecdc4",
       wickUpColor: "#ff6b6b",
       wickDownColor: "#4ecdc4",
-      borderVisible: false,
     });
 
     let volumeSeries: ISeriesApi<"Histogram"> | undefined;
@@ -74,9 +78,11 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
       });
       chart.priceScale("").applyOptions({
         scaleMargins: {
-          top: 0.75,
-          bottom: 0.05,
+          top: 0.88,
+          bottom: 0.02,
         },
+        drawTicks: false,
+        drawLabels: false,
       });
     }
 

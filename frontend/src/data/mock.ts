@@ -41,8 +41,8 @@ export const orderBook = {
   ],
 };
 
-const baseDate = new Date("2025-11-03T09:00:00");
-export const timelineCandles = Array.from({ length: 60 }).map((_, idx) => {
+const baseDate = new Date("2025-11-03T03:00:00");
+export const timelineCandles = Array.from({ length: 300 }).map((_, idx) => {
   const current = new Date(baseDate.getTime() + idx * 60 * 1000);
   const open = 18500 + Math.sin(idx / 4) * 150 + (idx % 3) * 25;
   const close = open + (Math.random() - 0.5) * 90;
