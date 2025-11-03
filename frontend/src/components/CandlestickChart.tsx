@@ -52,9 +52,8 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
       localization: {
         priceFormatter: (price: number) => price.toFixed(2),
       },
-      watermark: {
-        visible: false,
-      },
+      watermark: { visible: false },
+      leftPriceScale: { visible: false },
     });
 
     const candleSeries = chart.addCandlestickSeries({

@@ -63,8 +63,8 @@ export const SecondaryCharts: FC<{ priceSeries: PriceDatum[]; volumeSeries: Volu
               </linearGradient>
             </defs>
             <CartesianGrid {...chartGridStyle} />
-            <XAxis dataKey="time" tick={{ fill: "rgba(232,242,255,0.6)", fontSize: 12 }} />
-            <YAxis tick={{ fill: "rgba(232,242,255,0.6)", fontSize: 12 }} width={70} />
+            <XAxis dataKey="time" tick={{ fill: "rgba(232,242,255,0.75)", fontSize: 15 }} />
+            <YAxis tick={{ fill: "rgba(232,242,255,0.75)", fontSize: 15 }} width={80} />
             <Tooltip
               contentStyle={{
                 background: "rgba(18, 28, 46, 0.95)",
@@ -85,8 +85,8 @@ export const SecondaryCharts: FC<{ priceSeries: PriceDatum[]; volumeSeries: Volu
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={volumeSeries}>
             <CartesianGrid {...chartGridStyle} />
-            <XAxis dataKey="time" tick={{ fill: "rgba(232,242,255,0.6)", fontSize: 12 }} />
-            <YAxis tick={{ fill: "rgba(232,242,255,0.6)", fontSize: 12 }} width={70} />
+            <XAxis dataKey="time" tick={{ fill: "rgba(232,242,255,0.75)", fontSize: 15 }} />
+            <YAxis tick={{ fill: "rgba(232,242,255,0.75)", fontSize: 15 }} width={80} />
             <Tooltip
               contentStyle={{
                 background: "rgba(18, 28, 46, 0.95)",

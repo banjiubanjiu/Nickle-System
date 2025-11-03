@@ -6,13 +6,13 @@
   --dashboard-bg: #0f1729;
   --dashboard-panel: rgba(21, 31, 53, 0.8);
   --dashboard-panel-border: rgba(255, 255, 255, 0.08);
-  --dashboard-text-primary: #e8f2ff;
+  --dashboard-text-primary: rgb(109, 209, 246);
   --dashboard-text-secondary: rgba(232, 242, 255, 0.7);
   --dashboard-accent: #00d4ff;
   --dashboard-profit: #ff6b6b;
   --dashboard-loss: #4ecdc4;
   --dashboard-success: #52c41a;
-  --font-size-h1: 56px;
+  --font-size-h1: 50px;
   --font-size-h2: 22px;
   --font-size-h3: 18px;
   --font-size-body: 16px;
