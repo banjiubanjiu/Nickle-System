@@ -49,12 +49,12 @@ export const SecondaryCharts: FC<{ priceSeries: PriceDatum[]; volumeSeries: Volu
 }) => {
   return (
     <div className="grid cols-2">
-      <section className="dashboard-card" style={{ minHeight: 280 }}>
+      <section className="dashboard-card" style={{ minHeight: 320 }}>
         <div className="flex-between">
           <h2>价格走势图</h2>
           <span className="muted">分钟级</span>
         </div>
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={priceSeries}>
             <defs>
               <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
@@ -77,12 +77,12 @@ export const SecondaryCharts: FC<{ priceSeries: PriceDatum[]; volumeSeries: Volu
         </ResponsiveContainer>
       </section>
 
-      <section className="dashboard-card" style={{ minHeight: 280 }}>
+      <section className="dashboard-card" style={{ minHeight: 320 }}>
         <div className="flex-between">
           <h2>成交量 & 持仓量</h2>
           <span className="muted">最近 24 点位</span>
         </div>
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={volumeSeries}>
             <CartesianGrid {...chartGridStyle} />
             <XAxis dataKey="time" tick={{ fill: "rgba(232,242,255,0.75)", fontSize: 15 }} />
