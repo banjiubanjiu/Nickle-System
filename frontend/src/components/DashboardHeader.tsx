@@ -14,11 +14,11 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({ title, exchange, con
       <div className="flex-between">
         <div>
           <div className="badge">实时监控</div>
-          <h1 style={{ margin: "12px 0 0", fontSize: 32, fontWeight: 600 }}>{title}</h1>
+          <h1 style={{ margin: "12px 0 0", fontSize: "var(--font-size-h1)", fontWeight: 600 }}>{title}</h1>
         </div>
         <div style={{ textAlign: "right" }}>
           <div className="muted">{exchange}</div>
-          <div style={{ fontSize: 24, fontWeight: 500 }}>{contract}</div>
+          <div style={{ fontSize: 26, fontWeight: 600 }}>{contract}</div>
         </div>
       </div>
     </header>
