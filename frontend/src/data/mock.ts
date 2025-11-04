@@ -57,6 +57,7 @@ const createShfeData = () => {
       lastUpdated: "2025/11/3 12:22:54",
     },
     contracts,
+    priceUnit: "元/吨",
     summaryMetrics: [
       {
         label: "最新价",
@@ -209,6 +210,7 @@ const createLmeData = () => {
       lastUpdated: "2025/11/3 04:12:10 (UTC)",
     },
     contracts,
+    priceUnit: "USD/吨",
     summaryMetrics: [
       {
         label: "最新价",

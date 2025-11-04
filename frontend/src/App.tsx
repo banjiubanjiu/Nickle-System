@@ -69,7 +69,7 @@ const App: FC = () => {
         </section>
 
         <div className="panels">
-          <CandleChartCard candles={activeMarket.timelineCandles} />
+          <CandleChartCard candles={activeMarket.timelineCandles} unitLabel={activeMarket.priceUnit} />
           <OrderBookPanel {...activeMarket.orderBook} />
         </div>
 

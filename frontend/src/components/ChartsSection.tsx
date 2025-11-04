@@ -85,12 +85,17 @@ const buildNiceScale = (values: number[], targetTicks = 6) => {
   };
 };
 
-export const CandleChartCard: FC<{ candles: CandlePoint[] }> = ({ candles }) => {
+type CandleChartCardProps = {
+  candles: CandlePoint[];
+  unitLabel?: string;
+};
+
+export const CandleChartCard: FC<CandleChartCardProps> = ({ candles, unitLabel = "元/吨" }) => {
   return (
     <section className="dashboard-card" style={{ minHeight: 320, height: "100%" }}>
       <div className="flex-between" style={{ marginBottom: 12 }}>
         <h2>K线图（分时）</h2>
-        <span className="muted">单位：元/吨</span>
+        <span className="muted">单位：{unitLabel}</span>
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
         <CandlestickChart data={candles} />
