@@ -63,12 +63,14 @@ const formatTime = (hour: number, minute: number) => `${hour.toString().padStart
   .toString()
   .padStart(2, "0")}`;
 
-export const priceSeries = Array.from({ length: 24 }).map((_, idx) => {
-  const hour = 11 + Math.floor(idx / 6);
-  const minute = (idx % 6) * 10 + 3;
+const priceBase = new Date("2025-11-03T09:00:00");
+export const priceSeries = Array.from({ length: 120 }).map((_, idx) => {
+  const current = new Date(priceBase.getTime() + idx * 60 * 1000);
+  const drift = Math.sin(idx / 12) * 120 + Math.cos(idx / 8) * 60;
+  const noise = (Math.random() - 0.5) * 25;
   return {
-    time: formatTime(hour, minute),
-    value: 18400 + Math.sin(idx / 3) * 180 + Math.random() * 60,
+    time: formatTime(current.getHours(), current.getMinutes()),
+    value: Number((18420 + drift + noise).toFixed(2)),
   };
 });
 
