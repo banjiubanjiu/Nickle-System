@@ -36,7 +36,7 @@ const App: FC = () => {
     setSelectedContract(key);
   };
 
-  const headerTitle = activeMarket.meta.title;
+  const headerTitle = "镍金属期货实时数据大屏";
   const headerMeta = {
     exchange: activeExchangeOption.label,
     contract: contractLabel,
