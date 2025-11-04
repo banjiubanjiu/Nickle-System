@@ -269,6 +269,7 @@ table {
   position: sticky;
   top: 0;
   background: rgba(21, 31, 53, 0.95);
+  z-index: 2;
 }
 
 .table tbody td {
@@ -277,6 +278,41 @@ table {
   font-size: 18px;
   line-height: 1.6;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.table tbody tr {
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.table tbody tr::after {
+  content: "";
+  position: absolute;
+  inset: 2px 0;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  box-shadow: none;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.table tbody tr:hover {
+  transform: translateY(-1px);
+}
+
+.table tbody tr:hover::after {
+  border-color: rgba(0, 212, 255, 0.6);
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.22);
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.table tbody tr td {
+  position: relative;
 }
 
 .footer {
