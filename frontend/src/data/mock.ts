@@ -211,24 +211,24 @@ const createLmeData = () => {
     contracts,
     summaryMetrics: [
       {
-        label: "Last Price",
+        label: "最新价",
         value: "18,642",
         unit: "USD/吨",
         trend: "+0.18%",
         trendDirection: "up" as const,
       },
       {
-        label: "Daily Volume",
+        label: "成交量",
         value: "58,320",
-        unit: "Lot",
+        unit: "手",
       },
       {
-        label: "Open Interest",
+        label: "持仓量",
         value: "92,140",
-        unit: "Lot",
+        unit: "手",
       },
       {
-        label: "Prev Close",
+        label: "结算价",
         value: "18,610",
         unit: "USD/吨",
       },
@@ -254,10 +254,10 @@ const createLmeData = () => {
     priceSeries,
     volumeSeries,
     sessionStats: [
-      { label: "Open", value: "18,575", unit: "USD/吨" },
-      { label: "High", value: "18,702", unit: "USD/吨" },
-      { label: "Low", value: "18,512", unit: "USD/吨" },
-      { label: "Prev Settle", value: "18,590", unit: "USD/吨" },
+      { label: "开盘价", value: "18,575", unit: "USD/吨" },
+      { label: "最高价", value: "18,702", unit: "USD/吨" },
+      { label: "最低价", value: "18,512", unit: "USD/吨" },
+      { label: "昨结算", value: "18,590", unit: "USD/吨" },
     ],
     trades,
   };
