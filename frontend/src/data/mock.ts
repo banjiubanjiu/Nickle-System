@@ -207,7 +207,7 @@ const createLmeData = () => {
       title: "LME Nickel 市场看板",
       exchange: "伦敦金属交易所",
       contract: "Nickel 3M",
-      lastUpdated: "2025/11/3 04:12:10 (UTC)",
+      lastUpdated: "2025/11/3 12:12:10 (Beijing)",
     },
     contracts,
     priceUnit: "USD/吨",
