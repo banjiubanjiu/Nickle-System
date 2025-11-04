@@ -138,6 +138,8 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
     candleSeriesRef.current.setData(formattedData);
     if (chartRef.current && data.length > 0) {
       const timeScale = chartRef.current.timeScale();
+      windowSizeRef.current = null;
+      timeScale.resetTimeScale();
       const first = Number(formattedData[0].time);
       const last = Number(formattedData[formattedData.length - 1].time);
       if (Number.isFinite(first) && Number.isFinite(last)) {
@@ -149,6 +151,7 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
         windowSizeRef.current = windowWidth > 0 ? windowWidth : null;
         timeScale.applyOptions({ barSpacing: 14, minBarSpacing: 6, rightOffset: 1.5 });
         timeScale.setVisibleRange({ from: windowFrom, to: last });
+        timeScale.scrollToRealTime();
       } else {
         dataBoundsRef.current = null;
         windowSizeRef.current = null;
