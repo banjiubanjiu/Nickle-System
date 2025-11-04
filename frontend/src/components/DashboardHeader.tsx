@@ -1,72 +1,35 @@
-import type { ChangeEvent, FC } from "react";
-import { useMemo, useState } from "react";
+import type { FC } from "react";
 
 import "../styles/global.css";
 
-type DashboardHeaderProps = {
-  title: string;
-  exchange: string;
-  contract: string;
-};
-
-type ExchangeOption = {
+type Option = {
   key: string;
   label: string;
-  contracts: { key: string; label: string }[];
 };
 
-const EXCHANGE_OPTIONS: ExchangeOption[] = [
-  {
-    key: "shfe",
-    label: "上海期货交易所",
-    contracts: [
-      { key: "ni2501", label: "NI2501" },
-      { key: "ni2505", label: "NI2505" },
-      { key: "ni2509", label: "NI2509" },
-    ],
-  },
-  {
-    key: "lme",
-    label: "伦敦金属交易所",
-    contracts: [
-      { key: "nickel3m", label: "Nickel 3M" },
-      { key: "nickel15m", label: "Nickel 15M" },
-      { key: "nickel27m", label: "Nickel 27M" },
-    ],
-  },
-];
+type ExchangeOption = Option & {
+  contracts: Option[];
+};
 
-export const DashboardHeader: FC<DashboardHeaderProps> = ({ title, exchange, contract }) => {
-  const defaultExchange = useMemo(
-    () => EXCHANGE_OPTIONS.find((option) => option.label === exchange) ?? EXCHANGE_OPTIONS[0],
-    [exchange],
-  );
+type DashboardHeaderProps = {
+  title: string;
+  exchangeOptions: ExchangeOption[];
+  selectedExchangeKey: string;
+  selectedContractKey: string;
+  onExchangeChange: (key: string) => void;
+  onContractChange: (key: string) => void;
+};
 
-  const defaultContractKey = useMemo(() => {
-    const matchedContract = defaultExchange.contracts.find((item) => item.label === contract);
-    return matchedContract?.key ?? defaultExchange.contracts[0]?.key ?? "";
-  }, [contract, defaultExchange]);
-
-  const [selectedExchangeKey, setSelectedExchangeKey] = useState(defaultExchange.key);
-  const [selectedContractKey, setSelectedContractKey] = useState(defaultContractKey);
-
-  const activeExchange = useMemo(() => {
-    return EXCHANGE_OPTIONS.find((option) => option.key === selectedExchangeKey) ?? EXCHANGE_OPTIONS[0];
-  }, [selectedExchangeKey]);
-
-  const activeContracts = activeExchange.contracts;
-
-  const handleExchangeChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const nextExchangeKey = event.target.value;
-    setSelectedExchangeKey(nextExchangeKey);
-    const nextExchange = EXCHANGE_OPTIONS.find((option) => option.key === nextExchangeKey);
-    const fallbackContract = nextExchange?.contracts[0]?.key ?? "";
-    setSelectedContractKey(fallbackContract);
-  };
-
-  const handleContractChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedContractKey(event.target.value);
-  };
+export const DashboardHeader: FC<DashboardHeaderProps> = ({
+  title,
+  exchangeOptions,
+  selectedExchangeKey,
+  selectedContractKey,
+  onExchangeChange,
+  onContractChange,
+}) => {
+  const activeExchange = exchangeOptions.find((item) => item.key === selectedExchangeKey) ?? exchangeOptions[0];
+  const activeContracts = activeExchange?.contracts ?? [];
 
   return (
     <header className="dashboard-card dashboard-header">
@@ -90,8 +53,8 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({ title, exchange, con
         <div className="header-switchers">
           <label className="header-select">
             <span>交易所</span>
-            <select value={selectedExchangeKey} onChange={handleExchangeChange}>
-              {EXCHANGE_OPTIONS.map((option) => (
+            <select value={selectedExchangeKey} onChange={(event) => onExchangeChange(event.target.value)}>
+              {exchangeOptions.map((option) => (
                 <option key={option.key} value={option.key}>
                   {option.label}
                 </option>
@@ -100,7 +63,11 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({ title, exchange, con
           </label>
           <label className="header-select">
             <span>合约</span>
-            <select value={selectedContractKey} onChange={handleContractChange}>
+            <select
+              value={selectedContractKey}
+              onChange={(event) => onContractChange(event.target.value)}
+              disabled={activeContracts.length === 0}
+            >
               {activeContracts.map((item) => (
                 <option key={item.key} value={item.key}>
                   {item.label}
