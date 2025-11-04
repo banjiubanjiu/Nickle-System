@@ -41,14 +41,14 @@ export const orderBook = {
   ],
 };
 
-const baseDate = new Date("2025-11-03T03:00:00");
-export const timelineCandles = Array.from({ length: 300 }).map((_, idx) => {
-  const current = new Date(baseDate.getTime() + idx * 60 * 1000);
-  const open = 18500 + Math.sin(idx / 4) * 150 + (idx % 3) * 25;
-  const close = open + (Math.random() - 0.5) * 90;
-  const high = Math.max(open, close) + Math.random() * 70;
-  const low = Math.min(open, close) - Math.random() * 70;
-  const volume = Math.round(800 + Math.random() * 1200);
+const baseDate = new Date("2025-11-02T23:00:00");
+export const timelineCandles = Array.from({ length: 24 }).map((_, idx) => {
+  const current = new Date(baseDate.getTime() + idx * 60 * 60 * 1000);
+  const open = 18500 + Math.sin(idx / 2) * 120 + (idx % 4) * 35;
+  const close = open + (Math.random() - 0.5) * 120;
+  const high = Math.max(open, close) + Math.random() * 90;
+  const low = Math.min(open, close) - Math.random() * 90;
+  const volume = Math.round(500 + Math.random() * 2000);
   return {
     time: Math.floor(current.getTime() / 1000),
     open: Number(open.toFixed(2)),

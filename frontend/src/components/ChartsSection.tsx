@@ -33,7 +33,7 @@ export const CandleChartCard: FC<{ candles: CandlePoint[] }> = ({ candles }) => 
   return (
     <section className="dashboard-card" style={{ minHeight: 320, height: "100%" }}>
       <div className="flex-between" style={{ marginBottom: 12 }}>
-        <h2>K线图（分钟）</h2>
+        <h2>K线图（分时）</h2>
         <span className="muted">单位：元/吨</span>
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>

@@ -109,6 +109,14 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
     }
     const formattedData = data.map(({ volume, ...candle }) => candle);
     candleSeriesRef.current.setData(formattedData);
+    if (chartRef.current && data.length > 0) {
+      const timeScale = chartRef.current.timeScale();
+      timeScale.applyOptions({ barSpacing: 20, minBarSpacing: 16 });
+      timeScale.setVisibleRange({
+        from: data[Math.max(0, data.length - 24)].time,
+        to: data[data.length - 1].time,
+      });
+    }
 
     if (includeVolume && volumeSeriesRef.current) {
       const volumeData: HistogramData[] = data.map((point) => ({
