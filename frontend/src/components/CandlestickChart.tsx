@@ -23,6 +23,8 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
   const chartRef = useRef<ReturnType<typeof createChart>>();
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick">>();
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram">>();
+  const dataBoundsRef = useRef<{ from: number; to: number } | null>(null);
+  const windowSizeRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -89,6 +91,30 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
     candleSeriesRef.current = candleSeries;
     volumeSeriesRef.current = volumeSeries;
 
+    const timeScale = chart.timeScale();
+    const ensureDataVisible = (range: { from: number; to: number } | null) => {
+      const bounds = dataBoundsRef.current;
+      if (!range || !bounds) {
+        return;
+      }
+      const currentWidth = range.to - range.from;
+      if (currentWidth > 0 && Number.isFinite(currentWidth)) {
+        windowSizeRef.current = currentWidth;
+      }
+      const targetWidth = windowSizeRef.current ?? Math.max(bounds.to - bounds.from, 0);
+      if (range.to > bounds.to) {
+        const from = Math.max(bounds.to - targetWidth, bounds.from);
+        timeScale.setVisibleRange({ from, to: bounds.to });
+        return;
+      }
+      if (range.from < bounds.from) {
+        const to = Math.min(bounds.from + targetWidth, bounds.to);
+        timeScale.setVisibleRange({ from: bounds.from, to });
+      }
+    };
+
+    timeScale.subscribeVisibleTimeRangeChange(ensureDataVisible);
+
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
@@ -99,6 +125,7 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
 
     return () => {
       resizeObserver.disconnect();
+      timeScale.unsubscribeVisibleTimeRangeChange(ensureDataVisible);
       chart.remove();
     };
   }, [includeVolume]);
@@ -111,11 +138,21 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
     candleSeriesRef.current.setData(formattedData);
     if (chartRef.current && data.length > 0) {
       const timeScale = chartRef.current.timeScale();
-      timeScale.applyOptions({ barSpacing: 20, minBarSpacing: 16 });
-      timeScale.setVisibleRange({
-        from: data[Math.max(0, data.length - 24)].time,
-        to: data[data.length - 1].time,
-      });
+      const first = Number(formattedData[0].time);
+      const last = Number(formattedData[formattedData.length - 1].time);
+      if (Number.isFinite(first) && Number.isFinite(last)) {
+        dataBoundsRef.current = { from: first, to: last };
+        const windowStartIndex = Math.max(0, formattedData.length - 24);
+        const windowFromRaw = Number(formattedData[windowStartIndex].time);
+        const windowFrom = Number.isFinite(windowFromRaw) ? windowFromRaw : first;
+        const windowWidth = last - windowFrom;
+        windowSizeRef.current = windowWidth > 0 ? windowWidth : null;
+        timeScale.applyOptions({ barSpacing: 14, minBarSpacing: 6, rightOffset: 1.5 });
+        timeScale.setVisibleRange({ from: windowFrom, to: last });
+      } else {
+        dataBoundsRef.current = null;
+        windowSizeRef.current = null;
+      }
     }
 
     if (includeVolume && volumeSeriesRef.current) {
