@@ -157,6 +157,7 @@ export const SecondaryCharts: FC<{ priceSeries: PriceDatum[]; volumeSeries: Volu
                 border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: 12,
               }}
+              formatter={(value: number) => [value.toFixed(2), "price"]}
             />
             <Area
               type="monotone"
