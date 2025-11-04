@@ -1,4 +1,5 @@
-import type { FC } from "react";
+import type { ChangeEvent, FC } from "react";
+import { useMemo, useState } from "react";
 
 import "../styles/global.css";
 
@@ -8,7 +9,65 @@ type DashboardHeaderProps = {
   contract: string;
 };
 
+type ExchangeOption = {
+  key: string;
+  label: string;
+  contracts: { key: string; label: string }[];
+};
+
+const EXCHANGE_OPTIONS: ExchangeOption[] = [
+  {
+    key: "shfe",
+    label: "上海期货交易所",
+    contracts: [
+      { key: "ni2501", label: "NI2501" },
+      { key: "ni2505", label: "NI2505" },
+      { key: "ni2509", label: "NI2509" },
+    ],
+  },
+  {
+    key: "lme",
+    label: "伦敦金属交易所",
+    contracts: [
+      { key: "nickel3m", label: "Nickel 3M" },
+      { key: "nickel15m", label: "Nickel 15M" },
+      { key: "nickel27m", label: "Nickel 27M" },
+    ],
+  },
+];
+
 export const DashboardHeader: FC<DashboardHeaderProps> = ({ title, exchange, contract }) => {
+  const defaultExchange = useMemo(
+    () => EXCHANGE_OPTIONS.find((option) => option.label === exchange) ?? EXCHANGE_OPTIONS[0],
+    [exchange],
+  );
+
+  const defaultContractKey = useMemo(() => {
+    const matchedContract = defaultExchange.contracts.find((item) => item.label === contract);
+    return matchedContract?.key ?? defaultExchange.contracts[0]?.key ?? "";
+  }, [contract, defaultExchange]);
+
+  const [selectedExchangeKey, setSelectedExchangeKey] = useState(defaultExchange.key);
+  const [selectedContractKey, setSelectedContractKey] = useState(defaultContractKey);
+
+  const activeExchange = useMemo(() => {
+    return EXCHANGE_OPTIONS.find((option) => option.key === selectedExchangeKey) ?? EXCHANGE_OPTIONS[0];
+  }, [selectedExchangeKey]);
+
+  const activeContracts = activeExchange.contracts;
+
+  const handleExchangeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextExchangeKey = event.target.value;
+    setSelectedExchangeKey(nextExchangeKey);
+    const nextExchange = EXCHANGE_OPTIONS.find((option) => option.key === nextExchangeKey);
+    const fallbackContract = nextExchange?.contracts[0]?.key ?? "";
+    setSelectedContractKey(fallbackContract);
+  };
+
+  const handleContractChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedContractKey(event.target.value);
+  };
+
   return (
     <header className="dashboard-card dashboard-header">
       <div className="header-main">
@@ -31,17 +90,22 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({ title, exchange, con
         <div className="header-switchers">
           <label className="header-select">
             <span>交易所</span>
-            <select defaultValue="shfe">
-              <option value="shfe">上海期货交易所</option>
-              <option value="lme">伦敦金属交易所</option>
+            <select value={selectedExchangeKey} onChange={handleExchangeChange}>
+              {EXCHANGE_OPTIONS.map((option) => (
+                <option key={option.key} value={option.key}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </label>
           <label className="header-select">
             <span>合约</span>
-            <select defaultValue="ni2501">
-              <option value="ni2501">NI2501</option>
-              <option value="ni2505">NI2505</option>
-              <option value="ni2509">NI2509</option>
+            <select value={selectedContractKey} onChange={handleContractChange}>
+              {activeContracts.map((item) => (
+                <option key={item.key} value={item.key}>
+                  {item.label}
+                </option>
+              ))}
             </select>
           </label>
         </div>
