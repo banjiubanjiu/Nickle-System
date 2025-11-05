@@ -1,5 +1,5 @@
 import { useMemo, useState, type FC } from "react";
-import { exchangeOptions, marketDatasets, type MarketKey } from "./data/mock";
+import { buildMarketData, type MarketKey } from "./data/mock";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { MetricCard } from "./components/MetricCard";
 import { OrderBookPanel } from "./components/OrderBookPanel";
@@ -8,32 +8,35 @@ import { CandleChartCard, SecondaryCharts } from "./components/ChartsSection";
 import { StatsGrid } from "./components/StatsGrid";
 
 const App: FC = () => {
-  // 记录当前展示的交易所（默认展示上期所数据视图）。
-  const [selectedExchange, setSelectedExchange] = useState<MarketKey>("shfe");
-  const activeMarket = marketDatasets[selectedExchange];
+  const { datasets, exchangeOptions } = useMemo(() => buildMarketData(), []);
+  const exchangeKeys = Object.keys(datasets) as MarketKey[];
+  const defaultExchange = exchangeKeys[0] ?? "shfe";
 
-  // 派生出当前交易所的配置（包含可选合约与展示名称）。
-  const activeExchangeOption = useMemo(
-    () => exchangeOptions.find((option) => option.key === selectedExchange) ?? exchangeOptions[0],
-    [selectedExchange],
-  );
+  // 记录当前展示的交易所（默认展示上期所数据视图）。
+  const [selectedExchange, setSelectedExchange] = useState<MarketKey>(defaultExchange);
+  const activeMarket = datasets[selectedExchange] ?? datasets[defaultExchange];
 
   // 初始合约取自当前交易所的第一个合约；切换交易所时会同步更新。
-  const [selectedContract, setSelectedContract] = useState(() => activeMarket.contracts[0]?.key ?? "");
+  const [selectedContract, setSelectedContract] = useState(
+    () => activeMarket?.contracts[0]?.key ?? "",
+  );
 
-  const contractOptions = activeExchangeOption.contracts;
+  // 派生出当前交易所的配置（包含可选合约与展示名称）。
+  const activeExchangeOption =
+    exchangeOptions.find((option) => option.key === selectedExchange) ?? exchangeOptions[0];
+  const contractOptions = activeExchangeOption?.contracts ?? [];
 
   // 根据选中的合约 key 计算显示用的文案，若缺失则兜底为配置中的首个合约。
   const contractLabel = useMemo(() => {
     const matched = contractOptions.find((item) => item.key === selectedContract);
-    return matched?.label ?? contractOptions[0]?.label ?? activeMarket.meta.contract;
-  }, [activeMarket.meta.contract, contractOptions, selectedContract]);
+    return matched?.label ?? contractOptions[0]?.label ?? activeMarket?.meta.contract ?? "";
+  }, [activeMarket?.meta.contract, contractOptions, selectedContract]);
 
   // 切换交易所时同时刷新合约选项与对应数据集合。
   const handleExchangeChange = (key: string) => {
     const nextExchange = (key as MarketKey) ?? "shfe";
     setSelectedExchange(nextExchange);
-    const nextContracts = exchangeOptions.find((option) => option.key === nextExchange)?.contracts ?? [];
+    const nextContracts = datasets[nextExchange]?.contracts ?? [];
     setSelectedContract(nextContracts[0]?.key ?? "");
   };
 
@@ -47,7 +50,7 @@ const App: FC = () => {
   const headerMeta = {
     exchange: activeExchangeOption.label,
     contract: contractLabel,
-    lastUpdated: activeMarket.meta.lastUpdated,
+    lastUpdated: activeMarket?.meta.lastUpdated ?? "",
   };
 
   return (

@@ -1,7 +1,61 @@
-// Mock 数据生成脚本：用于在未联通后端时支撑前端页面展示。
-// 后续接入真实接口后，可保留该文件作为 Storybook 或离线演示数据来源。
+// Mock 数据生成脚本：演示用途的 12 小时动态行情。
+// 每次导入都会根据当前北京时间生成最新窗口，方便模拟实时体验。
 
-const formatTime = (hour: number, minute: number) => `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+const HOURS_WINDOW = 12;
+const HOUR_MS = 60 * 60 * 1000;
+const BEIJING_OFFSET_MINUTES = -8 * 60;
+const TIME_ZONE = "Asia/Shanghai";
+
+const timeFormatter = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: TIME_ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+const timeWithSecondsFormatter = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: TIME_ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
+const dateTimeFormatter = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
+const numberFormatter = new Intl.NumberFormat("zh-CN", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const integerFormatter = new Intl.NumberFormat("zh-CN");
+
+const toBeijingDate = (input: Date) => {
+  const localOffset = input.getTimezoneOffset();
+  const diffMinutes = BEIJING_OFFSET_MINUTES - localOffset;
+  return new Date(input.getTime() + diffMinutes * 60 * 1000);
+};
+
+const formatTime = (date: Date) => timeFormatter.format(date);
+const formatTimeWithSeconds = (date: Date) => timeWithSecondsFormatter.format(date);
+const formatDateTime = (date: Date) => dateTimeFormatter.format(date);
+
+const formatPrice = (value: number, fractionDigits = 2) =>
+  numberFormatter.format(Number(value.toFixed(fractionDigits)));
+
+const formatVolume = (value: number) => integerFormatter.format(Math.round(value));
+
+const toUTCTimestamp = (date: Date) =>
+  Math.floor((date.getTime() - date.getTimezoneOffset() * 60 * 1000) / 1000);
 
 type SummaryMetric = {
   label: string;
@@ -11,250 +65,228 @@ type SummaryMetric = {
   trendDirection?: "up" | "down";
 };
 
-const createShfeData = () => {
-  // 交易所及合约信息，结构与后端计划保持一致。
-  const contracts = [
-    { key: "ni2501", label: "NI2501" },
-    { key: "ni2505", label: "NI2505" },
-    { key: "ni2509", label: "NI2509" },
-  ];
+type GenerateConfig = {
+  basePrice: number;
+  priceUnit: string;
+  volumeBase: number;
+  volumeVariance: number;
+  openInterestBase: number;
+  openInterestVariance: number;
+};
 
-  const baseDate = new Date("2025-11-03T09:00:00");
+const generateHourlyCandles = (anchor: Date, config: GenerateConfig) => {
+  const candles: Array<{
+    timestamp: Date;
+    open: number;
+    close: number;
+    high: number;
+    low: number;
+    volume: number;
+  }> = [];
 
-  // 生成 5 分钟级别的 K 线数据，叠加正弦趋势与噪声制造波动。
-  const timelineCandles = Array.from({ length: 120 }).map((_, idx) => {
-    const current = new Date(baseDate.getTime() + idx * 5 * 60 * 1000);
-    const trend = Math.sin(idx / 18) * 160 + Math.cos(idx / 9) * 120;
-    const noise = (Math.random() - 0.5) * 60;
-    const open = 18480 + trend + noise;
-    const close = open + (Math.random() - 0.5) * 80;
-    const high = Math.max(open, close) + Math.random() * 90;
-    const low = Math.min(open, close) - Math.random() * 90;
-    const volume = Math.round(800 + Math.random() * 3500);
-    return {
-      time: Math.floor(current.getTime() / 1000),
-      open: Number(open.toFixed(2)),
-      close: Number(close.toFixed(2)),
-      high: Number(high.toFixed(2)),
-      low: Number(low.toFixed(2)),
+  let previousClose = config.basePrice;
+
+  for (let i = 0; i < HOURS_WINDOW; i += 1) {
+    const timestamp = new Date(anchor.getTime() - (HOURS_WINDOW - 1 - i) * HOUR_MS);
+    const trend =
+      Math.sin((timestamp.getHours() + i) / 2.3) * 35 +
+      Math.cos((timestamp.getHours() + i) / 3.1) * 25;
+    const noise = (Math.random() - 0.5) * 40;
+    const open = previousClose;
+    const close = open + trend + noise;
+    const high = Math.max(open, close) + Math.random() * 25;
+    const low = Math.min(open, close) - Math.random() * 25;
+    const volume =
+      config.volumeBase + Math.random() * config.volumeVariance + Math.max(trend, 0) * 120;
+
+    candles.push({
+      timestamp,
+      open,
+      close,
+      high,
+      low,
       volume,
-    };
-  });
+    });
 
-  // 价格折线图（每分钟），用于 5 分钟均线展示。
-  const priceSeries = Array.from({ length: 120 }).map((_, idx) => {
-    const current = new Date(baseDate.getTime() + idx * 60 * 1000);
-    const drift = Math.sin(idx / 12) * 120 + Math.cos(idx / 8) * 60;
-    const noise = (Math.random() - 0.5) * 25;
-    return {
-      time: formatTime(current.getHours(), current.getMinutes()),
-      value: Number((18420 + drift + noise).toFixed(2)),
-    };
-  });
+    previousClose = close;
+  }
 
-  // 10 分钟采样的成交量与持仓量序列，供柱状图使用。
-  const volumeSeries = Array.from({ length: 24 }).map((_, idx) => {
-    const hour = 18 + Math.floor(idx / 6);
-    const minute = (idx % 6) * 10;
-    return {
-      time: formatTime(hour, minute),
-      volume: Math.round(25000 + Math.random() * 90000),
-      openInterest: Math.round(20000 + Math.random() * 70000),
-    };
-  });
+  return candles;
+};
+
+const createDataset = (
+  now: Date,
+  anchor: Date,
+  config: GenerateConfig,
+  meta: { title: string; exchange: string; contract: string },
+) => {
+  const candles = generateHourlyCandles(anchor, config);
+
+  const priceSeries = candles.map((candle) => ({
+    time: formatTime(candle.timestamp),
+    value: Number(candle.close.toFixed(2)),
+  }));
+
+  const volumeSeries = candles.map((candle) => ({
+    time: formatTime(candle.timestamp),
+    volume: Math.round(candle.volume),
+    openInterest: Math.round(
+      config.openInterestBase +
+        Math.random() * config.openInterestVariance +
+        Math.max(candle.close - candle.open, 0) * 15,
+    ),
+  }));
+
+  const latestCandle = candles[candles.length - 1];
+  const previousCandle = candles[candles.length - 2] ?? latestCandle;
+  const latestPrice = latestCandle.close;
+  const prevClose = previousCandle.close;
+  const change = latestPrice - prevClose;
+  const changePct = prevClose === 0 ? 0 : (change / prevClose) * 100;
 
   const summaryMetrics: SummaryMetric[] = [
     {
       label: "最新价",
-      value: "18,527.09",
-      unit: "元/吨",
-      trend: "+0.31%",
-      trendDirection: "up",
+      value: formatPrice(latestPrice),
+      unit: config.priceUnit,
+      trend: `${change >= 0 ? "+" : ""}${formatPrice(change, 2)} (${changePct >= 0 ? "+" : ""}${formatPrice(changePct, 2)}%)`,
+      trendDirection: change >= 0 ? "up" : "down",
     },
     {
       label: "成交量",
-      value: "245,600",
+      value: formatVolume(volumeSeries.reduce((total, item) => total + item.volume, 0)),
       unit: "手",
     },
     {
       label: "持仓量",
-      value: "128,400",
+      value: formatVolume(volumeSeries.reduce((total, item) => total + item.openInterest, 0) / volumeSeries.length),
       unit: "手",
     },
     {
       label: "结算价",
-      value: "18,532.09",
-      unit: "元/吨",
+      value: formatPrice(previousCandle.close),
+      unit: config.priceUnit,
     },
   ];
 
+  const midpointPrice = (latestCandle.high + latestCandle.low) / 2;
+  const depthSpread = 6;
+  const orderBook = {
+    bestPrice: formatPrice(midpointPrice),
+    asks: Array.from({ length: 5 }).map((_, idx) => ({
+      price: formatPrice(midpointPrice + (idx + 1) * depthSpread),
+      volume: Math.round(200 + Math.random() * 600),
+    })),
+    bids: Array.from({ length: 5 }).map((_, idx) => ({
+      price: formatPrice(midpointPrice - (idx + 1) * depthSpread),
+      volume: Math.round(200 + Math.random() * 600),
+    })),
+  };
+
+  const trades = Array.from({ length: 30 }).map((_, idx) => {
+    const tradeTime = new Date(now.getTime() - idx * 45 * 1000);
+    const base = latestPrice + (Math.random() - 0.5) * 20;
+    const volume = 80 + Math.random() * 220;
+    return {
+      time: formatTimeWithSeconds(tradeTime),
+      price: formatPrice(base),
+      volume: numberFormatter.format(Number(volume.toFixed(1))),
+      side: idx % 2 === 0 ? "买入" : "卖出",
+    };
+  });
+
   return {
     meta: {
-      title: "镍金属期货实时数据大屏",
-      exchange: "上海期货交易所",
-      contract: "NI2501",
-      lastUpdated: "2025/11/3 12:22:54",
+      title: meta.title,
+      exchange: meta.exchange,
+      contract: meta.contract,
+      lastUpdated: formatDateTime(now),
     },
-    contracts,
-    priceUnit: "元/吨",
+    contracts: [
+      { key: meta.contract.toLowerCase().replace(/\s+/g, ""), label: meta.contract },
+    ],
+    priceUnit: config.priceUnit,
     summaryMetrics,
-    orderBook: {
-      bestPrice: "18,525.09",
-      asks: [
-        { price: "18,537.09", volume: 443 },
-        { price: "18,535.09", volume: 708 },
-        { price: "18,533.09", volume: 210 },
-        { price: "18,531.09", volume: 824 },
-        { price: "18,529.09", volume: 284 },
-      ],
-      bids: [
-        { price: "18,525.09", volume: 945 },
-        { price: "18,523.09", volume: 618 },
-        { price: "18,521.09", volume: 439 },
-        { price: "18,519.09", volume: 289 },
-        { price: "18,517.09", volume: 713 },
-      ],
-    },
-    timelineCandles,
+    orderBook,
+    timelineCandles: candles.map((candle) => ({
+      time: toUTCTimestamp(candle.timestamp),
+      open: Number(candle.open.toFixed(2)),
+      close: Number(candle.close.toFixed(2)),
+      high: Number(candle.high.toFixed(2)),
+      low: Number(candle.low.toFixed(2)),
+      volume: Math.round(candle.volume),
+    })),
     priceSeries,
     volumeSeries,
     sessionStats: [
-      { label: "开盘价", value: "18,450.00", unit: "元/吨" },
-      { label: "最高价", value: "18,620.00", unit: "元/吨" },
-      { label: "最低价", value: "18,420.00", unit: "元/吨" },
-      { label: "昨结算", value: "18,470.00", unit: "元/吨" },
+      { label: "最高价", value: formatPrice(Math.max(...candles.map((item) => item.high))), unit: config.priceUnit },
+      { label: "最低价", value: formatPrice(Math.min(...candles.map((item) => item.low))), unit: config.priceUnit },
+      { label: "平均价", value: formatPrice(candles.reduce((total, item) => total + item.close, 0) / candles.length), unit: config.priceUnit },
+      { label: "昨日收盘", value: formatPrice(previousCandle.close), unit: config.priceUnit },
     ],
-    trades: Array.from({ length: 30 }).map((_, idx) => {
-      const time = new Date(baseDate.getTime() + idx * 61 * 1000);
-      const price = 18500 + Math.sin(idx / 4) * 65 + (Math.random() - 0.5) * 25;
-      const volume = 200 + Math.round(Math.random() * 320);
-      const side = idx % 2 === 0 ? "买入" : "卖出";
-      return {
-        time: formatTime(time.getHours(), time.getMinutes()),
-        price: price.toFixed(2),
-        volume: volume.toFixed(1),
-        side,
-      };
-    }),
+    trades,
   };
 };
 
-const createLmeData = () => {
-  const contracts = [
-    { key: "nickel3m", label: "Nickel 3M" },
-    { key: "nickel15m", label: "Nickel 15M" },
-    { key: "nickel27m", label: "Nickel 27M" },
-  ];
+const createDatasets = () => {
+  const now = toBeijingDate(new Date());
+  const anchor = new Date(now);
+  anchor.setMinutes(0, 0, 0);
 
-  const baseDate = new Date("2025-11-03T07:00:00Z");
-
-  // LME 时间粒度采用 15 分钟，覆盖更长时间范围。
-  const timelineCandles = Array.from({ length: 160 }).map((_, idx) => {
-    const current = new Date(baseDate.getTime() + idx * 15 * 60 * 1000);
-    const trend = Math.sin(idx / 20) * 95 + Math.cos(idx / 11) * 70;
-    const noise = (Math.random() - 0.5) * 45;
-    const open = 18650 + trend + noise;
-    const close = open + (Math.random() - 0.5) * 65;
-    const high = Math.max(open, close) + Math.random() * 75;
-    const low = Math.min(open, close) - Math.random() * 75;
-    const volume = Math.round(420 + Math.random() * 1800);
-    return {
-      time: Math.floor(current.getTime() / 1000),
-      open: Number(open.toFixed(2)),
-      close: Number(close.toFixed(2)),
-      high: Number(high.toFixed(2)),
-      low: Number(low.toFixed(2)),
-      volume,
-    };
+  const shfe = createDataset(now, anchor, {
+    basePrice: 18600,
+    priceUnit: "元/吨",
+    volumeBase: 28000,
+    volumeVariance: 55000,
+    openInterestBase: 150000,
+    openInterestVariance: 45000,
+  }, {
+    title: "镍金属期货实时数据大屏",
+    exchange: "上海期货交易所",
+    contract: "NI 主力",
   });
 
-  const priceSeries = Array.from({ length: 120 }).map((_, idx) => {
-    const current = new Date(baseDate.getTime() + idx * 60 * 1000);
-    const drift = Math.sin(idx / 15) * 85 + Math.cos(idx / 10) * 55;
-    const noise = (Math.random() - 0.5) * 20;
-    return {
-      time: formatTime(current.getUTCHours(), current.getUTCMinutes()),
-      value: Number((18620 + drift + noise).toFixed(2)),
-    };
-  });
-
-  const volumeSeries = Array.from({ length: 24 }).map((_, idx) => {
-    const hour = 14 + Math.floor(idx / 6);
-    const minute = (idx % 6) * 10;
-    return {
-      time: formatTime(hour, minute),
-      volume: Math.round(18000 + Math.random() * 50000),
-      openInterest: Math.round(12000 + Math.random() * 48000),
-    };
+  const lme = createDataset(now, anchor, {
+    basePrice: 18720,
+    priceUnit: "USD/吨",
+    volumeBase: 6500,
+    volumeVariance: 15000,
+    openInterestBase: 82000,
+    openInterestVariance: 26000,
+  }, {
+    title: "LME Nickel 市场看板",
+    exchange: "伦敦金属交易所",
+    contract: "Nickel 3M",
   });
 
   return {
-    meta: {
-      title: "LME Nickel 市场看板",
-      exchange: "伦敦金属交易所",
-      contract: "Nickel 3M",
-      lastUpdated: "2025/11/3 12:12:10 (Beijing)",
-    },
-    contracts,
-    priceUnit: "USD/吨",
-    summaryMetrics: [
-      { label: "最新价", value: "18,642", unit: "USD/吨", trend: "+0.18%", trendDirection: "up" },
-      { label: "成交量", value: "58,320", unit: "手" },
-      { label: "持仓量", value: "92,140", unit: "手" },
-      { label: "结算价", value: "18,610", unit: "USD/吨" },
-    ],
-    orderBook: {
-      bestPrice: "18,640",
-      asks: [
-        { price: "18,652", volume: 168 },
-        { price: "18,648", volume: 214 },
-        { price: "18,643", volume: 187 },
-        { price: "18,638", volume: 153 },
-        { price: "18,633", volume: 145 },
-      ],
-      bids: [
-        { price: "18,640", volume: 242 },
-        { price: "18,636", volume: 198 },
-        { price: "18,631", volume: 205 },
-        { price: "18,626", volume: 176 },
-        { price: "18,621", volume: 162 },
+    shfe: {
+      ...shfe,
+      contracts: [
+        { key: "ni_main", label: "NI 主力" },
+        { key: "ni2505", label: "NI2505" },
       ],
     },
-    timelineCandles,
-    priceSeries,
-    volumeSeries,
-    sessionStats: [
-      { label: "开盘价", value: "18,575", unit: "USD/吨" },
-      { label: "最高价", value: "18,702", unit: "USD/吨" },
-      { label: "最低价", value: "18,512", unit: "USD/吨" },
-      { label: "昨结算", value: "18,590", unit: "USD/吨" },
-    ],
-    trades: Array.from({ length: 30 }).map((_, idx) => {
-      const time = new Date(baseDate.getTime() + idx * 61 * 1000);
-      const price = 18610 + Math.sin(idx / 4) * 65 + (Math.random() - 0.5) * 25;
-      const volume = 120 + Math.round(Math.random() * 320);
-      const side = idx % 2 === 0 ? "买入" : "卖出";
-      return {
-        time: formatTime(time.getUTCHours(), time.getUTCMinutes()),
-        price: price.toFixed(2),
-        volume: volume.toFixed(1),
-        side,
-      };
-    }),
+    lme: {
+      ...lme,
+      contracts: [
+        { key: "nickel3m", label: "Nickel 3M" },
+        { key: "nickel15m", label: "Nickel 15M" },
+      ],
+    },
   };
 };
 
-export const marketDatasets = {
-  shfe: createShfeData(),
-  lme: createLmeData(),
+type MarketDatasets = ReturnType<typeof createDatasets>;
+
+export type MarketKey = keyof MarketDatasets;
+
+export const buildMarketData = () => {
+  const datasets = createDatasets();
+  const options = Object.entries(datasets).map(([key, dataset]) => ({
+    key,
+    label: dataset.meta.exchange,
+    contracts: dataset.contracts,
+  }));
+  return { datasets, exchangeOptions: options };
 };
-
-// 市场标识枚举，便于组件声明 state 类型。
-export type MarketKey = keyof typeof marketDatasets;
-
-// 将数据源转换为下拉需要的选项结构。
-export const exchangeOptions = Object.entries(marketDatasets).map(([key, dataset]) => ({
-  key,
-  label: dataset.meta.exchange,
-  contracts: dataset.contracts,
-}));

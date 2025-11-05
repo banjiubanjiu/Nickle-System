@@ -1,4 +1,4 @@
-import { useMemo, type FC } from "react";
+import type { FC } from "react";
 import {
   Area,
   AreaChart,
@@ -11,7 +11,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CandlestickChart, type CandlePoint } from "./CandlestickChart";
+import { useEffect, useRef } from "react";
+import {
+  ColorType,
+  CrosshairMode,
+  createChart,
+  type CandlestickData,
+  type HistogramData,
+  type ISeriesApi,
+} from "lightweight-charts";
 
 type PriceDatum = {
   time: string;
@@ -86,6 +94,134 @@ const buildNiceScale = (values: number[], targetTicks = 6) => {
   };
 };
 
+type CandlePoint = CandlestickData & {
+  volume?: number;
+};
+
+type CandlestickChartProps = {
+  data: CandlePoint[];
+  includeVolume?: boolean;
+};
+
+const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = true }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ReturnType<typeof createChart>>();
+  const candleSeriesRef = useRef<ISeriesApi<"Candlestick">>();
+  const volumeSeriesRef = useRef<ISeriesApi<"Histogram">>();
+  const boundsRef = useRef<{ from: number; to: number } | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    const chart = createChart(containerRef.current, {
+      layout: {
+        background: { type: ColorType.Solid, color: "transparent" },
+        textColor: "rgba(232, 242, 255, 0.75)",
+      },
+      grid: {
+        vertLines: { color: "rgba(255, 255, 255, 0.05)" },
+        horzLines: { color: "rgba(255, 255, 255, 0.05)" },
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+      },
+      timeScale: {
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      rightPriceScale: {
+        borderColor: "rgba(255, 255, 255, 0.1)",
+      },
+      localization: {
+        priceFormatter: (price: number) => price.toFixed(2),
+      },
+      watermark: { visible: false },
+      leftPriceScale: { visible: false },
+    });
+
+    const candleSeries = chart.addCandlestickSeries({
+      upColor: "#ff6b6b",
+      downColor: "#4ecdc4",
+      borderUpColor: "#ff6b6b",
+      borderDownColor: "#4ecdc4",
+      wickUpColor: "#ff6b6b",
+      wickDownColor: "#4ecdc4",
+    });
+
+    let volumeSeries: ISeriesApi<"Histogram"> | undefined;
+    if (includeVolume) {
+      volumeSeries = chart.addHistogramSeries({
+        color: "rgba(0, 212, 255, 0.6)",
+        priceFormat: {
+          type: "volume",
+        },
+        priceScaleId: "",
+        base: 0,
+      });
+      chart.priceScale("").applyOptions({
+        scaleMargins: {
+          top: 0.85,
+          bottom: 0.02,
+        },
+        drawTicks: false,
+        drawLabels: false,
+      });
+    }
+
+    chartRef.current = chart;
+    candleSeriesRef.current = candleSeries;
+    volumeSeriesRef.current = volumeSeries;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        chart.applyOptions({ width, height });
+      }
+    });
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      chart.remove();
+      boundsRef.current = null;
+    };
+  }, [includeVolume]);
+
+  useEffect(() => {
+    if (!candleSeriesRef.current || !chartRef.current) {
+      return;
+    }
+    const formatted = data.map(({ volume, ...candle }) => candle);
+    candleSeriesRef.current.setData(formatted);
+
+    if (formatted.length > 0) {
+      const first = Number(formatted[0].time);
+      const last = Number(formatted[formatted.length - 1].time);
+      if (Number.isFinite(first) && Number.isFinite(last)) {
+        boundsRef.current = { from: first, to: last };
+        const timeScale = chartRef.current.timeScale();
+        timeScale.applyOptions({ barSpacing: 15, minBarSpacing: 6, rightOffset: 1.5 });
+        timeScale.setVisibleRange({ from: first, to: last });
+        timeScale.scrollToRealTime();
+      }
+    }
+
+    if (includeVolume && volumeSeriesRef.current) {
+      const volumeData: HistogramData[] = data.map((point) => ({
+        time: point.time,
+        value: point.volume ?? 0,
+        color: point.close >= point.open ? "rgba(255, 107, 107, 0.8)" : "rgba(78, 205, 196, 0.8)",
+      }));
+      volumeSeriesRef.current.setData(volumeData);
+    }
+  }, [data, includeVolume]);
+
+  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
+};
+
 type CandleChartCardProps = {
   candles: CandlePoint[];
   unitLabel?: string;
@@ -95,7 +231,7 @@ export const CandleChartCard: FC<CandleChartCardProps> = ({ candles, unitLabel =
   return (
     <section className="dashboard-card" style={{ minHeight: 320, height: "100%" }}>
       <div className="flex-between" style={{ marginBottom: 12 }}>
-        <h2>K 线图（分时）</h2>
+        <h2>K 线图（小时）</h2>
         <span className="muted">单位：{unitLabel}</span>
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
@@ -109,39 +245,16 @@ export const SecondaryCharts: FC<{ priceSeries: PriceDatum[]; volumeSeries: Volu
   priceSeries,
   volumeSeries,
 }) => {
-  // 将最近 60 分钟的价格做 5 分钟聚合，平滑区域图走势。
-  const aggregatedPriceSeries = useMemo(() => {
-    if (!priceSeries || priceSeries.length === 0) {
-      return [];
-    }
-    const minuteSeries = priceSeries.slice(-60);
-    const buckets: PriceDatum[] = [];
-    for (let i = 0; i < minuteSeries.length; i += 5) {
-      const bucket = minuteSeries.slice(i, i + 5);
-      if (!bucket.length) {
-        continue;
-      }
-      const average = bucket.reduce((sum, item) => sum + item.value, 0) / bucket.length;
-      buckets.push({
-        time: bucket[bucket.length - 1].time,
-        value: Number(average.toFixed(2)),
-      });
-    }
-    return buckets;
-  }, [priceSeries]);
-
-  const displayPriceSeries = aggregatedPriceSeries.length > 0 ? aggregatedPriceSeries : priceSeries;
-  const priceScale = useMemo(
-    () => buildNiceScale(displayPriceSeries.map((item) => item.value), 6),
-    [displayPriceSeries],
-  );
+  const displayPriceSeries = priceSeries;
+  const priceScale =
+    displayPriceSeries.length > 0 ? buildNiceScale(displayPriceSeries.map((item) => item.value), 6) : undefined;
 
   return (
     <div className="grid cols-2">
       <section className="dashboard-card" style={{ minHeight: 320 }}>
         <div className="flex-between">
           <h2>价格走势</h2>
-          <span className="muted">5 分钟均线 · 最近 60 分钟</span>
+          <span className="muted">过去 12 小时</span>
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={displayPriceSeries}>
@@ -182,7 +295,7 @@ export const SecondaryCharts: FC<{ priceSeries: PriceDatum[]; volumeSeries: Volu
       <section className="dashboard-card" style={{ minHeight: 320 }}>
         <div className="flex-between">
           <h2>成交量 & 持仓量</h2>
-          <span className="muted">最近 24 点位</span>
+          <span className="muted">过去 12 小时</span>
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={volumeSeries}>
