@@ -101,14 +101,16 @@ type CandlePoint = CandlestickData & {
 type CandlestickChartProps = {
   data: CandlePoint[];
   includeVolume?: boolean;
+  visibleRange?: { from: number; to: number };
 };
 
-const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = true }) => {
+const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = true, visibleRange }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ReturnType<typeof createChart>>();
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick">>();
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram">>();
   const boundsRef = useRef<{ from: number; to: number } | null>(null);
+  const windowWidthRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -175,6 +177,29 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
     candleSeriesRef.current = candleSeries;
     volumeSeriesRef.current = volumeSeries;
 
+    const timeScale = chart.timeScale();
+
+    const clampVisibleRange = (range: { from: number; to: number } | null) => {
+      const bounds = boundsRef.current;
+      if (!bounds || !range) {
+        return;
+      }
+      const width = range.to - range.from;
+      if (Number.isFinite(width) && width > 0) {
+        windowWidthRef.current = width;
+      }
+      const targetWidth = windowWidthRef.current ?? width;
+      if (range.to > bounds.to) {
+        const from = Math.max(bounds.to - targetWidth, bounds.from);
+        timeScale.setVisibleRange({ from, to: bounds.to });
+      } else if (range.from < bounds.from) {
+        const to = Math.min(bounds.from + targetWidth, bounds.to);
+        timeScale.setVisibleRange({ from: bounds.from, to });
+      }
+    };
+
+    timeScale.subscribeVisibleTimeRangeChange(clampVisibleRange);
+
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
@@ -185,8 +210,10 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
 
     return () => {
       resizeObserver.disconnect();
+      timeScale.unsubscribeVisibleTimeRangeChange(clampVisibleRange);
       chart.remove();
       boundsRef.current = null;
+      windowWidthRef.current = null;
     };
   }, [includeVolume]);
 
@@ -204,8 +231,18 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
         boundsRef.current = { from: first, to: last };
         const timeScale = chartRef.current.timeScale();
         timeScale.applyOptions({ barSpacing: 15, minBarSpacing: 6, rightOffset: 1.5 });
-        timeScale.setVisibleRange({ from: first, to: last });
+        const fallbackCount = Math.min(12, formatted.length);
+        const fallbackFrom =
+          formatted.length > fallbackCount
+            ? Number(formatted[formatted.length - fallbackCount].time)
+            : first;
+        const defaultRange =
+          visibleRange && Number.isFinite(visibleRange.from) && Number.isFinite(visibleRange.to)
+            ? visibleRange
+            : { from: fallbackFrom, to: last };
+        timeScale.setVisibleRange(defaultRange);
         timeScale.scrollToRealTime();
+        windowWidthRef.current = defaultRange.to - defaultRange.from;
       }
     }
 
@@ -224,10 +261,11 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
 
 type CandleChartCardProps = {
   candles: CandlePoint[];
+  visibleRange?: { from: number; to: number };
   unitLabel?: string;
 };
 
-export const CandleChartCard: FC<CandleChartCardProps> = ({ candles, unitLabel = "元/吨" }) => {
+export const CandleChartCard: FC<CandleChartCardProps> = ({ candles, visibleRange, unitLabel = "元/吨" }) => {
   return (
     <section className="dashboard-card" style={{ minHeight: 320, height: "100%" }}>
       <div className="flex-between" style={{ marginBottom: 12 }}>
@@ -235,7 +273,7 @@ export const CandleChartCard: FC<CandleChartCardProps> = ({ candles, unitLabel =
         <span className="muted">单位：{unitLabel}</span>
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
-        <CandlestickChart data={candles} />
+        <CandlestickChart data={candles} visibleRange={visibleRange} />
       </div>
     </section>
   );

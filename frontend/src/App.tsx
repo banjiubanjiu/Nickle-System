@@ -81,7 +81,11 @@ const App: FC = () => {
 
         {/* 主体区域：左侧为 K 线图，右侧为盘口深度面板。 */}
         <div className="panels">
-          <CandleChartCard candles={activeMarket.timelineCandles} unitLabel={activeMarket.priceUnit} />
+          <CandleChartCard
+            candles={activeMarket.timelineCandles}
+            visibleRange={activeMarket.timelineVisibleRange}
+            unitLabel={activeMarket.priceUnit}
+          />
           <OrderBookPanel {...activeMarket.orderBook} />
         </div>
 

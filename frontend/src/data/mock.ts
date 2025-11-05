@@ -1,7 +1,8 @@
-// Mock 数据生成脚本：演示用途的 12 小时动态行情。
-// 每次导入都会根据当前北京时间生成最新窗口，方便模拟实时体验。
+// Mock 数据生成脚本：演示用途的动态行情。
+// 每次导入都会根据当前北京时间生成 48 小时历史，并默认展示最近 12 小时窗口。
 
-const HOURS_WINDOW = 12;
+const TOTAL_HOURS = 48;
+const DEFAULT_VISIBLE_HOURS = 12;
 const HOUR_MS = 60 * 60 * 1000;
 const BEIJING_OFFSET_MINUTES = -8 * 60;
 const TIME_ZONE = "Asia/Shanghai";
@@ -86,8 +87,8 @@ const generateHourlyCandles = (anchor: Date, config: GenerateConfig) => {
 
   let previousClose = config.basePrice;
 
-  for (let i = 0; i < HOURS_WINDOW; i += 1) {
-    const timestamp = new Date(anchor.getTime() - (HOURS_WINDOW - 1 - i) * HOUR_MS);
+  for (let i = 0; i < TOTAL_HOURS; i += 1) {
+    const timestamp = new Date(anchor.getTime() - (TOTAL_HOURS - 1 - i) * HOUR_MS);
     const trend =
       Math.sin((timestamp.getHours() + i) / 2.3) * 35 +
       Math.cos((timestamp.getHours() + i) / 3.1) * 25;
@@ -121,13 +122,17 @@ const createDataset = (
   meta: { title: string; exchange: string; contract: string },
 ) => {
   const candles = generateHourlyCandles(anchor, config);
+  const visibleCandles =
+    candles.length >= DEFAULT_VISIBLE_HOURS
+      ? candles.slice(-DEFAULT_VISIBLE_HOURS)
+      : candles.slice();
 
-  const priceSeries = candles.map((candle) => ({
+  const priceSeries = visibleCandles.map((candle) => ({
     time: formatTime(candle.timestamp),
     value: Number(candle.close.toFixed(2)),
   }));
 
-  const volumeSeries = candles.map((candle) => ({
+  const volumeSeries = visibleCandles.map((candle) => ({
     time: formatTime(candle.timestamp),
     volume: Math.round(candle.volume),
     openInterest: Math.round(
@@ -216,6 +221,13 @@ const createDataset = (
       low: Number(candle.low.toFixed(2)),
       volume: Math.round(candle.volume),
     })),
+    timelineVisibleRange:
+      visibleCandles.length > 0
+        ? {
+            from: toUTCTimestamp(visibleCandles[0].timestamp),
+            to: toUTCTimestamp(visibleCandles[visibleCandles.length - 1].timestamp),
+          }
+        : undefined,
     priceSeries,
     volumeSeries,
     sessionStats: [
