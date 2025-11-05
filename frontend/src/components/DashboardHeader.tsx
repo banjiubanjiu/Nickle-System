@@ -2,6 +2,7 @@ import type { FC } from "react";
 
 import "../styles/global.css";
 
+// Option describes a generic dropdown item with key/label pair.
 type Option = {
   key: string;
   label: string;
@@ -12,10 +13,14 @@ type ExchangeOption = Option & {
 };
 
 type DashboardHeaderProps = {
+  // 标题文案（例：镍金属期货实时数据大屏）
   title: string;
+  // 全部交易所选项，包含对应的合约列表
   exchangeOptions: ExchangeOption[];
+  // 当前选中的交易所/合约
   selectedExchangeKey: string;
   selectedContractKey: string;
+  // 交互回调：切换交易所 / 合约
   onExchangeChange: (key: string) => void;
   onContractChange: (key: string) => void;
 };
@@ -28,6 +33,7 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
   onExchangeChange,
   onContractChange,
 }) => {
+  // 派生当前交易所信息，兜底为列表的首项，避免渲染阶段出现 undefined。
   const activeExchange = exchangeOptions.find((item) => item.key === selectedExchangeKey) ?? exchangeOptions[0];
   const activeContracts = activeExchange?.contracts ?? [];
 
@@ -51,6 +57,7 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
           </div>
         </div>
         <div className="header-switchers">
+          {/* 交易所选择器：驱动页面主数据切换 */}
           <label className="header-select">
             <span>交易所</span>
             <select value={selectedExchangeKey} onChange={(event) => onExchangeChange(event.target.value)}>
@@ -61,6 +68,7 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
               ))}
             </select>
           </label>
+          {/* 合约选择器：仅在当前交易所内切换合约视图 */}
           <label className="header-select">
             <span>合约</span>
             <select

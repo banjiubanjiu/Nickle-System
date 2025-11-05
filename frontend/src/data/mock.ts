@@ -1,14 +1,27 @@
-const formatTime = (hour: number, minute: number) => `${hour.toString().padStart(2, "0")}:${minute
-  .toString()
-  .padStart(2, "0")}`;
+// Mock 数据生成脚本：用于在未联通后端时支撑前端页面展示。
+// 后续接入真实接口后，可保留该文件作为 Storybook 或离线演示数据来源。
+
+const formatTime = (hour: number, minute: number) => `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+
+type SummaryMetric = {
+  label: string;
+  value: string;
+  unit?: string;
+  trend?: string;
+  trendDirection?: "up" | "down";
+};
 
 const createShfeData = () => {
+  // 交易所及合约信息，结构与后端计划保持一致。
   const contracts = [
     { key: "ni2501", label: "NI2501" },
     { key: "ni2505", label: "NI2505" },
     { key: "ni2509", label: "NI2509" },
   ];
+
   const baseDate = new Date("2025-11-03T09:00:00");
+
+  // 生成 5 分钟级别的 K 线数据，叠加正弦趋势与噪声制造波动。
   const timelineCandles = Array.from({ length: 120 }).map((_, idx) => {
     const current = new Date(baseDate.getTime() + idx * 5 * 60 * 1000);
     const trend = Math.sin(idx / 18) * 160 + Math.cos(idx / 9) * 120;
@@ -28,9 +41,9 @@ const createShfeData = () => {
     };
   });
 
-  const priceBase = new Date("2025-11-03T09:00:00");
+  // 价格折线图（每分钟），用于 5 分钟均线展示。
   const priceSeries = Array.from({ length: 120 }).map((_, idx) => {
-    const current = new Date(priceBase.getTime() + idx * 60 * 1000);
+    const current = new Date(baseDate.getTime() + idx * 60 * 1000);
     const drift = Math.sin(idx / 12) * 120 + Math.cos(idx / 8) * 60;
     const noise = (Math.random() - 0.5) * 25;
     return {
@@ -39,6 +52,7 @@ const createShfeData = () => {
     };
   });
 
+  // 10 分钟采样的成交量与持仓量序列，供柱状图使用。
   const volumeSeries = Array.from({ length: 24 }).map((_, idx) => {
     const hour = 18 + Math.floor(idx / 6);
     const minute = (idx % 6) * 10;
@@ -49,6 +63,31 @@ const createShfeData = () => {
     };
   });
 
+  const summaryMetrics: SummaryMetric[] = [
+    {
+      label: "最新价",
+      value: "18,527.09",
+      unit: "元/吨",
+      trend: "+0.31%",
+      trendDirection: "up",
+    },
+    {
+      label: "成交量",
+      value: "245,600",
+      unit: "手",
+    },
+    {
+      label: "持仓量",
+      value: "128,400",
+      unit: "手",
+    },
+    {
+      label: "结算价",
+      value: "18,532.09",
+      unit: "元/吨",
+    },
+  ];
+
   return {
     meta: {
       title: "镍金属期货实时数据大屏",
@@ -58,30 +97,7 @@ const createShfeData = () => {
     },
     contracts,
     priceUnit: "元/吨",
-    summaryMetrics: [
-      {
-        label: "最新价",
-        value: "18,527.09",
-        unit: "元/吨",
-        trend: "+0.31%",
-        trendDirection: "up" as const,
-      },
-      {
-        label: "成交量",
-        value: "245,600",
-        unit: "手",
-      },
-      {
-        label: "持仓量",
-        value: "128,400",
-        unit: "手",
-      },
-      {
-        label: "结算价",
-        value: "18,532.09",
-        unit: "元/吨",
-      },
-    ],
+    summaryMetrics,
     orderBook: {
       bestPrice: "18,525.09",
       asks: [
@@ -108,38 +124,18 @@ const createShfeData = () => {
       { label: "最低价", value: "18,420.00", unit: "元/吨" },
       { label: "昨结算", value: "18,470.00", unit: "元/吨" },
     ],
-    trades: [
-      { time: "12:22:54", price: "18,536.90", volume: "245.0", side: "卖出" },
-      { time: "12:22:07", price: "18,536.59", volume: "292.0", side: "买入" },
-      { time: "12:21:20", price: "18,536.28", volume: "339.0", side: "卖出" },
-      { time: "12:20:33", price: "18,535.97", volume: "386.0", side: "买入" },
-      { time: "12:19:46", price: "18,535.66", volume: "433.0", side: "卖出" },
-      { time: "12:18:59", price: "18,535.35", volume: "480.0", side: "买入" },
-      { time: "12:18:12", price: "18,535.04", volume: "527.0", side: "卖出" },
-      { time: "12:17:25", price: "18,534.73", volume: "574.0", side: "买入" },
-      { time: "12:16:38", price: "18,534.42", volume: "621.0", side: "卖出" },
-      { time: "12:15:51", price: "18,534.11", volume: "668.0", side: "买入" },
-      { time: "12:15:04", price: "18,533.80", volume: "715.0", side: "卖出" },
-      { time: "12:14:17", price: "18,533.49", volume: "762.0", side: "买入" },
-      { time: "12:13:30", price: "18,533.18", volume: "289.0", side: "卖出" },
-      { time: "12:12:43", price: "18,532.87", volume: "336.0", side: "买入" },
-      { time: "12:11:56", price: "18,532.56", volume: "383.0", side: "卖出" },
-      { time: "12:11:09", price: "18,532.25", volume: "430.0", side: "买入" },
-      { time: "12:10:22", price: "18,531.94", volume: "477.0", side: "卖出" },
-      { time: "12:09:35", price: "18,531.63", volume: "524.0", side: "买入" },
-      { time: "12:08:48", price: "18,531.32", volume: "571.0", side: "卖出" },
-      { time: "12:08:01", price: "18,531.01", volume: "618.0", side: "买入" },
-      { time: "12:07:14", price: "18,530.70", volume: "665.0", side: "卖出" },
-      { time: "12:06:27", price: "18,530.39", volume: "712.0", side: "买入" },
-      { time: "12:05:40", price: "18,530.08", volume: "759.0", side: "卖出" },
-      { time: "12:04:53", price: "18,529.77", volume: "286.0", side: "买入" },
-      { time: "12:04:06", price: "18,529.46", volume: "333.0", side: "卖出" },
-      { time: "12:03:19", price: "18,529.15", volume: "380.0", side: "买入" },
-      { time: "12:02:32", price: "18,528.84", volume: "427.0", side: "卖出" },
-      { time: "12:01:45", price: "18,528.53", volume: "474.0", side: "买入" },
-      { time: "12:00:58", price: "18,528.22", volume: "521.0", side: "卖出" },
-      { time: "12:00:11", price: "18,527.91", volume: "568.0", side: "买入" },
-    ],
+    trades: Array.from({ length: 30 }).map((_, idx) => {
+      const time = new Date(baseDate.getTime() + idx * 61 * 1000);
+      const price = 18500 + Math.sin(idx / 4) * 65 + (Math.random() - 0.5) * 25;
+      const volume = 200 + Math.round(Math.random() * 320);
+      const side = idx % 2 === 0 ? "买入" : "卖出";
+      return {
+        time: formatTime(time.getHours(), time.getMinutes()),
+        price: price.toFixed(2),
+        volume: volume.toFixed(1),
+        side,
+      };
+    }),
   };
 };
 
@@ -149,7 +145,10 @@ const createLmeData = () => {
     { key: "nickel15m", label: "Nickel 15M" },
     { key: "nickel27m", label: "Nickel 27M" },
   ];
+
   const baseDate = new Date("2025-11-03T07:00:00Z");
+
+  // LME 时间粒度采用 15 分钟，覆盖更长时间范围。
   const timelineCandles = Array.from({ length: 160 }).map((_, idx) => {
     const current = new Date(baseDate.getTime() + idx * 15 * 60 * 1000);
     const trend = Math.sin(idx / 20) * 95 + Math.cos(idx / 11) * 70;
@@ -189,19 +188,6 @@ const createLmeData = () => {
     };
   });
 
-  const tradeSides = ["买入", "卖出"] as const;
-  const trades = Array.from({ length: 30 }).map((_, idx) => {
-    const time = new Date(baseDate.getTime() + idx * 61 * 1000);
-    const price = 18610 + Math.sin(idx / 4) * 65 + (Math.random() - 0.5) * 25;
-    const volume = 120 + Math.round(Math.random() * 320);
-    return {
-      time: formatTime(time.getUTCHours(), time.getUTCMinutes()),
-      price: price.toFixed(2),
-      volume: volume.toFixed(1),
-      side: tradeSides[idx % 2],
-    };
-  });
-
   return {
     meta: {
       title: "LME Nickel 市场看板",
@@ -212,28 +198,10 @@ const createLmeData = () => {
     contracts,
     priceUnit: "USD/吨",
     summaryMetrics: [
-      {
-        label: "最新价",
-        value: "18,642",
-        unit: "USD/吨",
-        trend: "+0.18%",
-        trendDirection: "up" as const,
-      },
-      {
-        label: "成交量",
-        value: "58,320",
-        unit: "手",
-      },
-      {
-        label: "持仓量",
-        value: "92,140",
-        unit: "手",
-      },
-      {
-        label: "结算价",
-        value: "18,610",
-        unit: "USD/吨",
-      },
+      { label: "最新价", value: "18,642", unit: "USD/吨", trend: "+0.18%", trendDirection: "up" },
+      { label: "成交量", value: "58,320", unit: "手" },
+      { label: "持仓量", value: "92,140", unit: "手" },
+      { label: "结算价", value: "18,610", unit: "USD/吨" },
     ],
     orderBook: {
       bestPrice: "18,640",
@@ -261,7 +229,18 @@ const createLmeData = () => {
       { label: "最低价", value: "18,512", unit: "USD/吨" },
       { label: "昨结算", value: "18,590", unit: "USD/吨" },
     ],
-    trades,
+    trades: Array.from({ length: 30 }).map((_, idx) => {
+      const time = new Date(baseDate.getTime() + idx * 61 * 1000);
+      const price = 18610 + Math.sin(idx / 4) * 65 + (Math.random() - 0.5) * 25;
+      const volume = 120 + Math.round(Math.random() * 320);
+      const side = idx % 2 === 0 ? "买入" : "卖出";
+      return {
+        time: formatTime(time.getUTCHours(), time.getUTCMinutes()),
+        price: price.toFixed(2),
+        volume: volume.toFixed(1),
+        side,
+      };
+    }),
   };
 };
 
@@ -270,8 +249,10 @@ export const marketDatasets = {
   lme: createLmeData(),
 };
 
+// 市场标识枚举，便于组件声明 state 类型。
 export type MarketKey = keyof typeof marketDatasets;
 
+// 将数据源转换为下拉需要的选项结构。
 export const exchangeOptions = Object.entries(marketDatasets).map(([key, dataset]) => ({
   key,
   label: dataset.meta.exchange,

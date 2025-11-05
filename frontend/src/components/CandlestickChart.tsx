@@ -9,12 +9,14 @@ import {
   type HistogramData,
 } from "lightweight-charts";
 
+// 扩展 Lightweight Charts 的蜡烛数据，允许附带成交量。
 export type CandlePoint = CandlestickData & {
   volume?: number;
 };
 
 type CandlestickChartProps = {
   data: CandlePoint[];
+  // 是否在 K 线下方叠加成交量柱状图。
   includeVolume?: boolean;
 };
 
@@ -23,6 +25,7 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
   const chartRef = useRef<ReturnType<typeof createChart>>();
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick">>();
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram">>();
+  // 记录数据边界，用于在缩放时锁定视窗范围。
   const dataBoundsRef = useRef<{ from: number; to: number } | null>(null);
   const windowSizeRef = useRef<number | null>(null);
 
@@ -31,6 +34,7 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
       return;
     }
 
+    // 初始化 Lightweight Chart 图表实例及基础样式。
     const chart = createChart(containerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
@@ -69,6 +73,7 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
 
     let volumeSeries: ISeriesApi<"Histogram"> | undefined;
     if (includeVolume) {
+      // 在同一图表添加直方图系列用于成交量展示。
       volumeSeries = chart.addHistogramSeries({
         color: "rgba(0, 212, 255, 0.6)",
         priceFormat: {
@@ -92,6 +97,7 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
     volumeSeriesRef.current = volumeSeries;
 
     const timeScale = chart.timeScale();
+    // 保持时间窗口固定，避免用户缩放后跳出数据范围。
     const ensureDataVisible = (range: { from: number; to: number } | null) => {
       const bounds = dataBoundsRef.current;
       if (!range || !bounds) {
@@ -115,6 +121,7 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
 
     timeScale.subscribeVisibleTimeRangeChange(ensureDataVisible);
 
+    // 监听容器尺寸变化，保持图表自适应。
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
@@ -134,6 +141,7 @@ export const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolum
     if (!candleSeriesRef.current) {
       return;
     }
+    // 将数据转换为 Lightweight Charts 需要的格式（去除 volume 字段）。
     const formattedData = data.map(({ volume, ...candle }) => candle);
     candleSeriesRef.current.setData(formattedData);
     if (chartRef.current && data.length > 0) {

@@ -1,5 +1,6 @@
 import type { FC } from "react";
 
+// 单条成交记录：时间、价格、成交量、方向。
 type Trade = {
   time: string;
   price: string;
@@ -8,6 +9,7 @@ type Trade = {
 };
 
 type TradesTableProps = {
+  // 按时间倒序排列的成交列表。
   trades: Trade[];
 };
 
@@ -16,7 +18,8 @@ export const TradesTable: FC<TradesTableProps> = ({ trades }) => {
     <section className="dashboard-card">
       <div className="flex-between">
         <h2>实时成交明细</h2>
-        <span className="muted">最近 30 条（滚动查看）</span>
+        {/* 静态说明：展示最近 30 条记录，可滚动查看更多 */}
+        <span className="muted">最新 30 条（滚动查看）</span>
       </div>
       <div className="table-scroll">
         <table className="table">
@@ -29,6 +32,7 @@ export const TradesTable: FC<TradesTableProps> = ({ trades }) => {
             </tr>
           </thead>
           <tbody>
+            {/* 使用行号辅助 key，避免时间重复导致警告 */}
             {trades.map((trade, idx) => (
               <tr key={`${trade.time}-${idx}`}>
                 <td>{trade.time}</td>

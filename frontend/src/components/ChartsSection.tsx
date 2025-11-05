@@ -29,6 +29,7 @@ const chartGridStyle = {
   stroke: "rgba(255,255,255,0.08)",
 };
 
+// 帮助函数：生成人类友好的轴刻度（nice number algorithm）。
 const niceNumber = (range: number, round: boolean): number => {
   if (!isFinite(range) || range <= 0) {
     return 1;
@@ -94,7 +95,7 @@ export const CandleChartCard: FC<CandleChartCardProps> = ({ candles, unitLabel =
   return (
     <section className="dashboard-card" style={{ minHeight: 320, height: "100%" }}>
       <div className="flex-between" style={{ marginBottom: 12 }}>
-        <h2>K线图（分时）</h2>
+        <h2>K 线图（分时）</h2>
         <span className="muted">单位：{unitLabel}</span>
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
@@ -108,6 +109,7 @@ export const SecondaryCharts: FC<{ priceSeries: PriceDatum[]; volumeSeries: Volu
   priceSeries,
   volumeSeries,
 }) => {
+  // 将最近 60 分钟的价格做 5 分钟聚合，平滑区域图走势。
   const aggregatedPriceSeries = useMemo(() => {
     if (!priceSeries || priceSeries.length === 0) {
       return [];
@@ -129,15 +131,16 @@ export const SecondaryCharts: FC<{ priceSeries: PriceDatum[]; volumeSeries: Volu
   }, [priceSeries]);
 
   const displayPriceSeries = aggregatedPriceSeries.length > 0 ? aggregatedPriceSeries : priceSeries;
-  const priceScale = useMemo(() => buildNiceScale(displayPriceSeries.map((item) => item.value), 6), [
-    displayPriceSeries,
-  ]);
+  const priceScale = useMemo(
+    () => buildNiceScale(displayPriceSeries.map((item) => item.value), 6),
+    [displayPriceSeries],
+  );
 
   return (
     <div className="grid cols-2">
       <section className="dashboard-card" style={{ minHeight: 320 }}>
         <div className="flex-between">
-          <h2>价格走势图</h2>
+          <h2>价格走势</h2>
           <span className="muted">5 分钟均线 · 最近 60 分钟</span>
         </div>
         <ResponsiveContainer width="100%" height={300}>
