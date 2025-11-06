@@ -1,4 +1,4 @@
-﻿import type { FC } from "react";
+import type { FC } from "react";
 
 import "../styles/global.css";
 
@@ -32,7 +32,7 @@ type DashboardHeaderProps = {
   // 当前选中的交易所/合约
   selectedExchangeKey: string;
   selectedContractKey: string;
-  // 交互回调：切换交易所 / 合约
+  // 交互回调：切换交易所 / 合约 / 导航页签
   onExchangeChange: (key: string) => void;
   onContractChange: (key: string) => void;
   onNavChange: (key: NavKey) => void;
@@ -49,7 +49,8 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
   onNavChange,
 }) => {
   // 派生当前交易所信息，兜底为列表的首项，避免渲染阶段出现 undefined。
-  const activeExchange = exchangeOptions.find((item) => item.key === selectedExchangeKey) ?? exchangeOptions[0];
+  const activeExchange =
+    exchangeOptions.find((item) => item.key === selectedExchangeKey) ?? exchangeOptions[0];
   const activeContracts = activeExchange?.contracts ?? [];
 
   return (

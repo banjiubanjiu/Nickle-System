@@ -292,6 +292,7 @@ const createDatasets = () => {
 type MarketDatasets = ReturnType<typeof createDatasets>;
 
 export type MarketKey = keyof MarketDatasets;
+export type MarketDataset = MarketDatasets[MarketKey];
 
 export const buildMarketData = () => {
   const datasets = createDatasets();
