@@ -1,39 +1,37 @@
-# MVP 前后端联调规划（契约梳理）
+# MVP ǰ��������滮����Լ������
+> Ŀ�꣺��ȷǰ�������������Լ���˶����к�� API��������������������첽�裬Ϊ��ʵ���ݽ����û�����
 
-> 目标：明确前端所需的数据契约，核对现有后端 API，并给出后续对齐与改造步骤，为真实数据接入打好基础。
-
-## 1. 关键接口与责任划分
-| 场景 | 前端期望 | 后端现状（2025-11-05 curl 验证） | 待对齐事项 |
+## 1. �ؼ��ӿ������λ���
+| ���� | ǰ������ | �����״��2025-11-05 curl ��֤�� | ���������� |
 | --- | --- | --- | --- |
-| 健康检查 | 服务状态、`intraday_interval_seconds`、最近一次采集时间 | `/health` 返回 `status`、`database`、`latest_lme_snapshot`、`intraday_interval_seconds`、`retention_hours`、`timestamp` | ✅ 字段齐全；如需 SHFE 最新时间或告警信息，可再评估是否扩展 |
-| 最新快照 | 最新行情（价格、涨跌幅、盘口、时间） | `/api/v1/dashboard/latest?exchange=shfe/lme` 返回完整快照字段及 `meta.labels` | ✅ 满足指标卡与盘口需求；确保 UI 与字段名保持一致 |
-| 分时（实时序列） | 最近 N 条蜡烛（供 K 线、价格折线、成交量图使用） | `/api/v1/dashboard/intraday?exchange=&limit=` 按 `captured_at` 降序返回快照，字段与最新快照一致 | ✅ 可直接使用；若需要小时聚合，可前端处理或讨论新增后端聚合接口 |
-| 历史日线 | 日线图或统计用途 | `/api/v1/dashboard/daily?...`（示例区间暂无数据，但结构包含 `labels`、`start_date`、`end_date`） | ⚠️ 需使用有数据的日期再验证字段完整性与排序规则 |
-| 成交明细/盘口 | 最新成交列表、盘口五档 | 快照中仅有买价/卖价一档，暂无专门接口 | ❗ 若要展示真实盘口/成交，需补采集或新接口；当前建议前端继续使用 mock |
+| ������� | ����״̬��intraday_interval_seconds�����һ�βɼ�ʱ�� | /health ���� status��database��latest_lme_snapshot��intraday_interval_seconds��etention_hours��	imestamp | ? �ֶ���ȫ������ SHFE ����ʱ���澯��Ϣ�����������Ƿ���չ |
+| ���¿��� | �������飨�۸��ǵ������̿ڡ�ʱ�䣩 | /api/v1/dashboard/latest?exchange=shfe/lme �������������ֶμ� meta.labels | ? ����ָ�꿨���̿�����ȷ�� UI ���ֶ���һ�� |
+| ��ʱ��ʵʱ���У� | ��� N �����򣨹� K �ߡ��۸����ߡ��ɽ���ͼʹ�ã� | /api/v1/dashboard/intraday?exchange=&limit= �� captured_at ���򷵻ؿ��գ��ֶ������¿���һ�� | ? ��ֱ��ʹ�ã�����ҪСʱ�ۺϣ���ǰ�˴���������������˾ۺϽӿ� |
+| ��ʷ���� | ����ͼ��ͳ����; | /api/v1/dashboard/daily?...��ʾ�������������ݣ����ṹ���� labels��start_date��end_date�� | ?? ��ʹ�������ݵ���������֤�ֶ������ԡ�������� |
+| �ɽ���ϸ/�̿� | ���³ɽ��б����̿��嵵 | �����н������/����һ��������ר�Žӿ� | ? ��Ҫչʾ��ʵ�̿�/�ɽ�����Ҫ���ɼ����½ӿڣ���ǰ����ǰ�˼���ʹ�� mock |
 
-## 2. 数据字段映射
-- **摘要指标**：`latest_price`、`change`、`change_pct`、`volume`、`open_interest`、`prev_settlement`。
-- **K 线 / 价格走势**：`open`、`high`、`low`、`close`、`captured_at`、`quote_date`。
-- **成交量 / 持仓量**：`volume`、`open_interest`。
-- **盘口**：`bid`、`ask`（当前仅单档）。
-- **成交明细**：前端 mock 自造，需要待后端明确采集策略或提供接口。
+## 2. �����ֶ�ӳ��
+- ժҪָ�꣺latest_price��change��change_pct��olume��open_interest��prev_settlement��
+- K �� / �۸����ƣ�open��high��low��close��captured_at��quote_date��
+- �ɽ��� / �ֲ�����olume��open_interest��
+- �̿ڣ�id��sk����ǰ����������
+- �ɽ���ϸ��ǰ�� mock ���죬�ȴ�����ṩ��ʵ�ӿڻ�ɼ����ԡ�
 
-Storage 表及 API 已覆盖上述字段，但五档盘口和成交明细仍缺乏支撑。
+## 3. ��Լ��������˼·
+1. ʱ�����API ʹ�� ISO8601��UTC��������ǰ����������˸�Ϊ����ʱ�䣬��Ҫͳһת�����ԡ�
+2. �ֶε�λ���۸�λ��Ԫ/�֡�USD/�֣������� meta ��ȷ������Ӳ���롣
+3. �̿�/�ɽ���ϸ�����ڼ�����ǰ�� mock�������ɺ�˲��ɼ���
+4. ���������ƣ�/intraday ��֧�� limit �Ұ�ʱ�併������Ҫ����չʾ����ǰ�˷�ת�����߽ӿ���ȷ���������ҳ���ԡ�
+5. LME �ɽ�����ʵʱ�ӿ�ȱ���ɽ�����Ŀǰʹ����һ���������ݻ�������ĵ���ǰ�� UI ˵�����죬���滮�����ɼ�������
 
-## 3. 契约差异与解决思路
-1. **时间戳格式**：当前 API 使用 ISO8601（UTC），满足前端需求；若未来提供本地时间，需要文档说明并统一转换策略。
-2. **字段单位**：快照中价格默认单位为元/吨或 USD/吨；建议在 `meta` 中增加单位或在文档中明确，避免前端硬编码。
-3. **盘口/成交明细**：短期维持前端 mock；长期需要后端决定是否扩展采集与接口。
-4. **排序与限制**：`/intraday` 已支持 `limit` 并按时间降序返回；若需要升序展示，可由前端反转。日线接口需确认排序与分页策略。
-5. **交易所扩展**：当前支持 `shfe` / `lme`；若未来扩展其他交易所，需要统一枚举与配置。
+## 4. ��������
+1. ȷ����Լ�����˶����ϱ�������ȱʧ�ֶλ�ӿڵĴ�����ʽ��
+2. �����ĵ����� docs/design/pr.md ������ĵ���¼�ֶ�˵������λ��ʾ����Ӧ��
+3. ʵ����أ�
+   - ��˲��������ֶ�/�ӿڲ����� Swagger��
+   - ǰ�˷�װ��ʵ API ����㣬�滻 mock���������/����/��ѯ�߼���
+4. ��������ԣ�׼���˵��˲��ԣ��ű��� Playwright������֤�ؼ������������� mock ��Ϊ��ʾ / ����ģʽ��
 
-## 4. 后续步骤
-1. **确认契约**：与后端对照上表，对缺失字段或未来需求（如多档盘口）做决策。
-2. **完善文档**：在 `docs/design/pr.md` 或新建接口文档记录字段说明、单位、示例响应。
-3. **实现落地**：
-   - 后端补齐需要的字段/接口并更新 Swagger。
-   - 前端封装真实 API 服务层，替换 mock；加入加载、错误、轮询逻辑。
-4. **联调与测试**：准备端到端测试（脚本或 Playwright）验证关键数据流；保留 mock 作为演示/回退模式。
-
-## 5. 待办清单
-- [ ] 成交明细：短期继续使用前端 mock，等待后端提供真实接口或采集方案。
+## 5. �����嵥
+- [ ] �ɽ���ϸ�����ڼ���ʹ��ǰ�� mock���ȴ�����ṩ��ʵ�ӿڻ�ɼ�������
+- [ ] LME �ɽ�������Ϊ��һ���������ݣ���Ҫ��������Ƿ��ܲɼ�ʵʱ�ɽ������ṩ���ָ�ꡣ
