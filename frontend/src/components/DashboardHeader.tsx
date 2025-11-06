@@ -1,4 +1,4 @@
-import type { FC } from "react";
+﻿import type { FC } from "react";
 
 import "../styles/global.css";
 
@@ -12,7 +12,7 @@ type ExchangeOption = Option & {
   contracts: Option[];
 };
 
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   { key: "home", label: "首页" },
   { key: "morning", label: "晨报" },
   { key: "daily", label: "日报" },
@@ -21,9 +21,12 @@ const NAV_ITEMS = [
   { key: "yearly", label: "年报" },
 ] as const;
 
+export type NavKey = (typeof NAV_ITEMS)[number]["key"];
+
 type DashboardHeaderProps = {
   // 标题文案（例：镍金属期货实时数据大屏）
   title: string;
+  activeNavKey: NavKey;
   // 全部交易所选项，包含对应的合约列表
   exchangeOptions: ExchangeOption[];
   // 当前选中的交易所/合约
@@ -32,21 +35,22 @@ type DashboardHeaderProps = {
   // 交互回调：切换交易所 / 合约
   onExchangeChange: (key: string) => void;
   onContractChange: (key: string) => void;
+  onNavChange: (key: NavKey) => void;
 };
 
 export const DashboardHeader: FC<DashboardHeaderProps> = ({
   title,
+  activeNavKey,
   exchangeOptions,
   selectedExchangeKey,
   selectedContractKey,
   onExchangeChange,
   onContractChange,
+  onNavChange,
 }) => {
   // 派生当前交易所信息，兜底为列表的首项，避免渲染阶段出现 undefined。
   const activeExchange = exchangeOptions.find((item) => item.key === selectedExchangeKey) ?? exchangeOptions[0];
   const activeContracts = activeExchange?.contracts ?? [];
-
-  const activeNavKey = NAV_ITEMS[0].key;
 
   return (
     <header className="dashboard-card dashboard-header">
@@ -75,6 +79,8 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
                 type="button"
                 key={item.key}
                 className={isActive ? "header-nav-item active" : "header-nav-item"}
+                aria-pressed={isActive}
+                onClick={() => onNavChange(item.key)}
               >
                 {item.label}
               </button>
