@@ -8,7 +8,7 @@ import { MorningDailyReport } from "./pages/reports/MorningDailyReport";
 import { WeeklyReport } from "./pages/reports/WeeklyReport";
 import { MonthlyReport } from "./pages/reports/MonthlyReport";
 import { YearlyReport } from "./pages/reports/YearlyReport";
-import { morningDailyReports } from "./data/reports/morningDaily";
+import { getMorningDailyReports } from "./data/reports/morningDaily";
 import { weeklyReport } from "./data/reports/weekly";
 import { monthlyReport } from "./data/reports/monthly";
 import { yearlyReport } from "./data/reports/yearly";
@@ -178,6 +178,7 @@ const App: FC = () => {
   const selectedNavKey = PATH_TO_NAV_KEY[currentPath] ?? "home";
   const isHomeView = selectedNavKey === "home";
   const headerTitle = NAV_TITLE_MAP[selectedNavKey] ?? NAV_TITLE_MAP.home;
+  const morningDailyReports = getMorningDailyReports();
 
   useEffect(() => {
     const contracts = activeMarket?.contracts ?? [];
