@@ -1,11 +1,17 @@
-﻿﻿﻿﻿﻿﻿﻿﻿import { useEffect, useMemo, useRef, useState, type FC, type ReactNode } from "react";
-import { buildMarketData, type MarketKey } from "./data/mock";
+import { useEffect, useMemo, useRef, useState, type FC, type ReactNode } from "react";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+
+import { buildMarketData, type MarketDataset, type MarketKey } from "./data/mock";
 import { DashboardHeader, type NavKey } from "./components/DashboardHeader";
 import { RealtimeDashboard } from "./pages/dashboard/RealtimeDashboard";
 import { MorningDailyReport } from "./pages/reports/MorningDailyReport";
 import { WeeklyReport } from "./pages/reports/WeeklyReport";
 import { MonthlyReport } from "./pages/reports/MonthlyReport";
 import { YearlyReport } from "./pages/reports/YearlyReport";
+import { morningDailyReports } from "./data/reports/morningDaily";
+import { weeklyReport } from "./data/reports/weekly";
+import { monthlyReport } from "./data/reports/monthly";
+import { yearlyReport } from "./data/reports/yearly";
 import {
   fetchHealth,
   fetchLatest,
@@ -13,10 +19,6 @@ import {
   type SnapshotRecord,
 } from "./services/dashboard";
 import type { MetricView } from "./types/reports";
-import { morningDailyReports } from "./data/reports/morningDaily";
-import { weeklyReport } from "./data/reports/weekly";
-import { monthlyReport } from "./data/reports/monthly";
-import { yearlyReport } from "./data/reports/yearly";
 
 type MetricGroups = {
   primary: MetricView[];
@@ -50,10 +52,7 @@ const formatPercent = (value: number | null | undefined): string =>
     ? "--"
     : `${value >= 0 ? "+" : ""}${percentFormatter.format(value)}%`;
 
-const mapSnapshotToMetrics = (
-  snapshot: SnapshotRecord,
-  unitLabel: string,
-): MetricView[] => {
+const mapSnapshotToMetrics = (snapshot: SnapshotRecord, unitLabel: string): MetricView[] => {
   const changePct = snapshot.change_pct ?? null;
   const trendDirection: "up" | "down" =
     changePct === null || changePct === undefined ? "up" : changePct >= 0 ? "up" : "down";
@@ -67,7 +66,7 @@ const mapSnapshotToMetrics = (
       trendDirection,
     },
     {
-      label: "涨跌幅",
+      label: "涨跌%",
       value: formatPercent(snapshot.change_pct),
     },
     {
@@ -103,13 +102,24 @@ const mapSnapshotToMetrics = (
   ];
 };
 
-const cloneMetrics = (metrics: MetricView[] | undefined): MetricView[] =>
+const cloneMetrics = (metrics?: MetricView[]): MetricView[] =>
   metrics ? metrics.map((metric) => ({ ...metric })) : [];
 
 const splitMetrics = (metrics: MetricView[]): MetricGroups => {
   const primary = metrics.slice(0, 4);
   const secondary = metrics.slice(4, 8);
   return { primary, secondary };
+};
+
+const buildFallbackMetrics = (market?: MarketDataset): MetricGroups =>
+  splitMetrics(cloneMetrics(market?.summaryMetrics as MetricView[] | undefined));
+
+const normalizePath = (pathname: string): string => {
+  if (pathname === "/") {
+    return "/";
+  }
+  const trimmed = pathname.replace(/\/+$/, "");
+  return trimmed === "" ? "/" : trimmed;
 };
 
 const NAV_TITLE_MAP: Record<NavKey, string> = {
@@ -121,47 +131,60 @@ const NAV_TITLE_MAP: Record<NavKey, string> = {
   yearly: "年度策略展望",
 };
 
+const NAV_KEY_TO_PATH: Record<NavKey, string> = {
+  home: "/",
+  morning: "/reports/morning",
+  daily: "/reports/daily",
+  weekly: "/reports/weekly",
+  monthly: "/reports/monthly",
+  yearly: "/reports/yearly",
+};
+
+const PATH_TO_NAV_KEY: Record<string, NavKey> = Object.entries(NAV_KEY_TO_PATH).reduce(
+  (acc, [key, path]) => {
+    acc[normalizePath(path)] = key as NavKey;
+    return acc;
+  },
+  {} as Record<string, NavKey>,
+);
+
 const App: FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const { datasets, exchangeOptions } = useMemo(() => buildMarketData(), []);
   const exchangeKeys = Object.keys(datasets) as MarketKey[];
   const defaultExchange = exchangeKeys[0] ?? "shfe";
 
-  const [selectedNavKey, setSelectedNavKey] = useState<NavKey>("home");
   const [selectedExchange, setSelectedExchange] = useState<MarketKey>(defaultExchange);
-  const activeMarket = datasets[selectedExchange] ?? datasets[defaultExchange];
-
-  const getFallbackMetricGroups = () =>
-    splitMetrics(cloneMetrics(activeMarket?.summaryMetrics as MetricView[] | undefined));
+  const activeMarket: MarketDataset =
+    datasets[selectedExchange] ?? datasets[defaultExchange];
 
   const [selectedContract, setSelectedContract] = useState(
-    () => activeMarket?.contracts[0]?.key ?? "",
+    activeMarket?.contracts[0]?.key ?? "",
   );
-  const [primaryMetrics, setPrimaryMetrics] = useState<MetricView[]>(() => getFallbackMetricGroups().primary);
-  const [secondaryMetrics, setSecondaryMetrics] = useState<MetricView[]>(() => getFallbackMetricGroups().secondary);
-  const [lastUpdated, setLastUpdated] = useState<string>(activeMarket?.meta.lastUpdated ?? "");
 
-  const activeExchangeOption =
-    exchangeOptions.find((option) => option.key === selectedExchange) ?? exchangeOptions[0];
-  const contractOptions = activeExchangeOption?.contracts ?? [];
-
-  const contractLabel = useMemo(() => {
-    const matched = contractOptions.find((item) => item.key === selectedContract);
-    return matched?.label ?? contractOptions[0]?.label ?? activeMarket?.meta.contract ?? "";
-  }, [activeMarket?.meta.contract, contractOptions, selectedContract]);
-
-  const handleExchangeChange = (key: string) => {
-    const nextExchange = (key as MarketKey) ?? "shfe";
-    setSelectedExchange(nextExchange);
-    const nextContracts = datasets[nextExchange]?.contracts ?? [];
-    setSelectedContract(nextContracts[0]?.key ?? "");
-  };
-
-  const handleContractChange = (key: string) => {
-    setSelectedContract(key);
-  };
+  const fallbackMetrics = useMemo(() => buildFallbackMetrics(activeMarket), [activeMarket]);
+  const [primaryMetrics, setPrimaryMetrics] = useState<MetricView[]>(fallbackMetrics.primary);
+  const [secondaryMetrics, setSecondaryMetrics] = useState<MetricView[]>(fallbackMetrics.secondary);
+  const [lastUpdated, setLastUpdated] = useState<string>(
+    activeMarket?.meta.lastUpdated ?? "",
+  );
 
   const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const latestSnapshotRef = useRef<SnapshotRecord | null>(null);
+
+  const currentPath = normalizePath(location.pathname);
+  const selectedNavKey = PATH_TO_NAV_KEY[currentPath] ?? "home";
+  const isHomeView = selectedNavKey === "home";
+  const headerTitle = NAV_TITLE_MAP[selectedNavKey] ?? NAV_TITLE_MAP.home;
+
+  useEffect(() => {
+    const contracts = activeMarket?.contracts ?? [];
+    setSelectedContract((prev) =>
+      contracts.some((item) => item.key === prev) ? prev : contracts[0]?.key ?? "",
+    );
+  }, [activeMarket]);
 
   useEffect(() => {
     let cancelled = false;
@@ -173,11 +196,12 @@ const App: FC = () => {
       }
     };
 
-    if (selectedNavKey !== "home") {
-      const fallback = getFallbackMetricGroups();
+    if (!isHomeView) {
+      const fallback = buildFallbackMetrics(activeMarket);
       setPrimaryMetrics(fallback.primary);
       setSecondaryMetrics(fallback.secondary);
       setLastUpdated(activeMarket?.meta.lastUpdated ?? "");
+      latestSnapshotRef.current = null;
       clearTimer();
       return () => {
         cancelled = true;
@@ -197,21 +221,18 @@ const App: FC = () => {
     };
 
     const loadFallback = () => {
-      if (!latestSnapshotRef.current && activeMarket) {
-        const fallback = getFallbackMetricGroups();
-        setPrimaryMetrics(fallback.primary);
-        setSecondaryMetrics(fallback.secondary);
-        setLastUpdated(activeMarket.meta.lastUpdated ?? "");
-      }
+      const fallback = buildFallbackMetrics(activeMarket);
+      setPrimaryMetrics(fallback.primary);
+      setSecondaryMetrics(fallback.secondary);
+      setLastUpdated(activeMarket?.meta.lastUpdated ?? "");
     };
 
     const fetchLatestSnapshot = async () => {
       try {
         const response: DashboardEnvelope<SnapshotRecord> = await fetchLatest(selectedExchange);
-        if (cancelled) {
-          return;
+        if (!cancelled) {
+          applySnapshot(response.data);
         }
-        applySnapshot(response.data);
       } catch {
         if (!cancelled) {
           loadFallback();
@@ -221,11 +242,7 @@ const App: FC = () => {
 
     const initialise = async () => {
       clearTimer();
-      const fallback = getFallbackMetricGroups();
-      setPrimaryMetrics(fallback.primary);
-      setSecondaryMetrics(fallback.secondary);
-      setLastUpdated(activeMarket?.meta.lastUpdated ?? "");
-
+      loadFallback();
       await fetchLatestSnapshot();
 
       let intervalMs = 30_000;
@@ -247,50 +264,28 @@ const App: FC = () => {
       cancelled = true;
       clearTimer();
     };
-  }, [selectedExchange, activeMarket, selectedNavKey]);
+  }, [selectedExchange, activeMarket, isHomeView]);
 
-  const isHomeView = selectedNavKey === "home";
-  const headerTitle = NAV_TITLE_MAP[selectedNavKey] ?? NAV_TITLE_MAP.home;
+  const handleExchangeChange = (key: string) => {
+    const nextExchange = (key as MarketKey) ?? defaultExchange;
+    setSelectedExchange(nextExchange);
+    const market = datasets[nextExchange] ?? datasets[defaultExchange];
+    const fallback = buildFallbackMetrics(market);
+    setPrimaryMetrics(fallback.primary);
+    setSecondaryMetrics(fallback.secondary);
+    setLastUpdated(market?.meta.lastUpdated ?? "");
+    setSelectedContract(market?.contracts[0]?.key ?? "");
+    latestSnapshotRef.current = null;
+  };
 
-  let reportSection: ReactNode = null;
-  let reportUpdatedAt = "";
+  const handleContractChange = (key: string) => {
+    setSelectedContract(key);
+  };
 
-  if (!isHomeView) {
-    switch (selectedNavKey) {
-      case "morning": {
-        const content = morningDailyReports.morning;
-        reportSection = <MorningDailyReport content={content} />;
-        reportUpdatedAt = content.updatedAt;
-        break;
-      }
-      case "daily": {
-        const content = morningDailyReports.daily;
-        reportSection = <MorningDailyReport content={content} />;
-        reportUpdatedAt = content.updatedAt;
-        break;
-      }
-      case "weekly": {
-        const content = weeklyReport;
-        reportSection = <WeeklyReport content={content} />;
-        reportUpdatedAt = content.updatedAt;
-        break;
-      }
-      case "monthly": {
-        const content = monthlyReport;
-        reportSection = <MonthlyReport content={content} />;
-        reportUpdatedAt = content.updatedAt;
-        break;
-      }
-      case "yearly": {
-        const content = yearlyReport;
-        reportSection = <YearlyReport content={content} />;
-        reportUpdatedAt = content.updatedAt;
-        break;
-      }
-      default:
-        break;
-    }
-  }
+  const handleNavChange = (key: NavKey) => {
+    const targetPath = NAV_KEY_TO_PATH[key] ?? "/";
+    navigate(targetPath);
+  };
 
   return (
     <div className="dashboard-layout">
@@ -302,33 +297,79 @@ const App: FC = () => {
         selectedContractKey={selectedContract}
         onExchangeChange={handleExchangeChange}
         onContractChange={handleContractChange}
-        onNavChange={(key) => setSelectedNavKey(key)}
+        onNavChange={handleNavChange}
       />
 
       <div className="dashboard-container">
-        {isHomeView ? (
-          <RealtimeDashboard
-            primaryMetrics={primaryMetrics}
-            secondaryMetrics={secondaryMetrics}
-            market={activeMarket}
-            lastUpdated={lastUpdated}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <RealtimeDashboard
+                primaryMetrics={primaryMetrics}
+                secondaryMetrics={secondaryMetrics}
+                market={activeMarket}
+                lastUpdated={lastUpdated}
+              />
+            }
           />
-        ) : (
-          reportSection && (
-            <>
-              {reportSection}
-              <footer className="footer">
-                <span>报告更新：{reportUpdatedAt}</span>
-                <a href="#" className="trend-up">
-                  研报归档
-                </a>
-              </footer>
-            </>
-          )
-        )}
+          <Route
+            path="/reports/morning"
+            element={
+              <ReportLayout updatedAt={morningDailyReports.morning.updatedAt}>
+                <MorningDailyReport content={morningDailyReports.morning} />
+              </ReportLayout>
+            }
+          />
+          <Route
+            path="/reports/daily"
+            element={
+              <ReportLayout updatedAt={morningDailyReports.daily.updatedAt}>
+                <MorningDailyReport content={morningDailyReports.daily} />
+              </ReportLayout>
+            }
+          />
+          <Route
+            path="/reports/weekly"
+            element={
+              <ReportLayout updatedAt={weeklyReport.updatedAt}>
+                <WeeklyReport content={weeklyReport} />
+              </ReportLayout>
+            }
+          />
+          <Route
+            path="/reports/monthly"
+            element={
+              <ReportLayout updatedAt={monthlyReport.updatedAt}>
+                <MonthlyReport content={monthlyReport} />
+              </ReportLayout>
+            }
+          />
+          <Route
+            path="/reports/yearly"
+            element={
+              <ReportLayout updatedAt={yearlyReport.updatedAt}>
+                <YearlyReport content={yearlyReport} />
+              </ReportLayout>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
     </div>
   );
-}
+};
 
 export default App;
+
+const ReportLayout: FC<{ updatedAt: string; children: ReactNode }> = ({ children, updatedAt }) => (
+  <>
+    {children}
+    <footer className="footer">
+      <span>报告更新：{updatedAt}</span>
+      <a href="#" className="trend-up">
+        研报归档
+      </a>
+    </footer>
+  </>
+);
