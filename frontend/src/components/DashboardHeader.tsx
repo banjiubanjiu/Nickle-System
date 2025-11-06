@@ -12,6 +12,15 @@ type ExchangeOption = Option & {
   contracts: Option[];
 };
 
+const NAV_ITEMS = [
+  { key: "home", label: "首页" },
+  { key: "morning", label: "晨报" },
+  { key: "daily", label: "日报" },
+  { key: "weekly", label: "周报" },
+  { key: "monthly", label: "月报" },
+  { key: "yearly", label: "年报" },
+] as const;
+
 type DashboardHeaderProps = {
   // 标题文案（例：镍金属期货实时数据大屏）
   title: string;
@@ -37,6 +46,8 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
   const activeExchange = exchangeOptions.find((item) => item.key === selectedExchangeKey) ?? exchangeOptions[0];
   const activeContracts = activeExchange?.contracts ?? [];
 
+  const activeNavKey = NAV_ITEMS[0].key;
+
   return (
     <header className="dashboard-card dashboard-header">
       <div className="header-main">
@@ -56,6 +67,20 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
             <h1 style={{ margin: 0, fontSize: "28px", fontWeight: 600 }}>{title}</h1>
           </div>
         </div>
+        <nav className="header-nav" aria-label="研报导航">
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.key === activeNavKey;
+            return (
+              <button
+                type="button"
+                key={item.key}
+                className={isActive ? "header-nav-item active" : "header-nav-item"}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
         <div className="header-switchers">
           {/* 交易所选择器：驱动页面主数据切换 */}
           <label className="header-select">
