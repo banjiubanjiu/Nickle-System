@@ -46,6 +46,11 @@
   gap: 16px;
 }
 
+.header-switchers-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .header-nav {
   display: flex;
   align-items: center;

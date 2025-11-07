@@ -5,10 +5,16 @@
 }
 
 .report-hero {
-  flex-direction: row;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-hero-row {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
 }
 
 .report-hero h2 {

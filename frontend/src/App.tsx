@@ -300,6 +300,7 @@ const App: FC = () => {
         onExchangeChange={handleExchangeChange}
         onContractChange={handleContractChange}
         onNavChange={handleNavChange}
+        showMarketSelectors={isHomeView}
       />
 
       <div className="dashboard-container">

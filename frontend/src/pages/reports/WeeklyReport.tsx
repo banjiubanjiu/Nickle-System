@@ -13,12 +13,13 @@ export const WeeklyReport: FC<WeeklyReportProps> = ({ content }) => {
   return (
     <div className="report-page weekly-report">
       <section className="dashboard-card report-hero">
-        <div>
+        <div className="report-hero-row">
           <h2>{content.heroTitle}</h2>
-          <p>{content.heroSubtitle}</p>
+          <span className="report-hero-updated">更新：{content.updatedAt}</span>
         </div>
-        <div className="report-hero-meta">
-          <span>更新：{content.updatedAt}</span>
+        <div className="report-hero-row">
+          <p>{content.heroSubtitle}</p>
+          <span />
         </div>
       </section>
 

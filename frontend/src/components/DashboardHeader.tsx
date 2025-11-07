@@ -36,6 +36,7 @@ type DashboardHeaderProps = {
   onExchangeChange: (key: string) => void;
   onContractChange: (key: string) => void;
   onNavChange: (key: NavKey) => void;
+  showMarketSelectors?: boolean;
 };
 
 export const DashboardHeader: FC<DashboardHeaderProps> = ({
@@ -47,11 +48,14 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
   onExchangeChange,
   onContractChange,
   onNavChange,
+  showMarketSelectors = true,
 }) => {
   // 派生当前交易所信息，兜底为列表的首项，避免渲染阶段出现 undefined。
   const activeExchange =
     exchangeOptions.find((item) => item.key === selectedExchangeKey) ?? exchangeOptions[0];
   const activeContracts = activeExchange?.contracts ?? [];
+
+  const switcherClassName = showMarketSelectors ? "header-switchers" : "header-switchers header-switchers-hidden";
 
   return (
     <header className="dashboard-card dashboard-header">
@@ -88,11 +92,15 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
             );
           })}
         </nav>
-        <div className="header-switchers">
+        <div className={switcherClassName} aria-hidden={!showMarketSelectors}>
           {/* 交易所选择器：驱动页面主数据切换 */}
           <label className="header-select">
             <span>交易所</span>
-            <select value={selectedExchangeKey} onChange={(event) => onExchangeChange(event.target.value)}>
+            <select
+              value={selectedExchangeKey}
+              onChange={(event) => onExchangeChange(event.target.value)}
+              tabIndex={showMarketSelectors ? 0 : -1}
+            >
               {exchangeOptions.map((option) => (
                 <option key={option.key} value={option.key}>
                   {option.label}
@@ -107,6 +115,7 @@ export const DashboardHeader: FC<DashboardHeaderProps> = ({
               value={selectedContractKey}
               onChange={(event) => onContractChange(event.target.value)}
               disabled={activeContracts.length === 0}
+              tabIndex={showMarketSelectors ? 0 : -1}
             >
               {activeContracts.map((item) => (
                 <option key={item.key} value={item.key}>
