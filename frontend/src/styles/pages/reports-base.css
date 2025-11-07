@@ -5,12 +5,14 @@
 }
 
 .report-hero {
+  /* Extends .dashboard-card (flex column); override to two stacked rows */
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 .report-hero-row {
+  /* First row: title vs updated, second row: subtitle vs action */
   display: flex;
   align-items: center;
   justify-content: space-between;

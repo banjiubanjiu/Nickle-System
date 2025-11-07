@@ -11,15 +11,16 @@
 .header-main {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 24px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 28px;
-  margin-left: 32px;
+  gap: 20px;
+  flex: 0 0 360px;
+  justify-content: flex-start;
 }
 
 .header-brand {
@@ -44,11 +45,37 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 0 0 360px;
+  justify-content: flex-end;
+  min-height: 56px;
 }
 
 .header-switchers-hidden {
-  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+}
+
+@media (max-width: 1200px) {
+  .header-main {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .header-left,
+  .header-switchers {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+
+  .header-left {
+    margin-left: 0;
+  }
+
+  .header-nav {
+    order: 3;
+    width: 100%;
+    flex-wrap: wrap;
+  }
 }
 
 .header-nav {
