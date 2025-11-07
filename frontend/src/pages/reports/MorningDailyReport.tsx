@@ -103,6 +103,40 @@ export const MorningDailyReport: FC<MorningDailyReportProps> = ({ content }) => 
           </section>
         ) : null}
       </div>
+
+      {content.chartAnalysis ? (
+        <section className="dashboard-card morning-chart-card">
+          <div className="flex-between morning-chart-header">
+            <h2>图表技术分析</h2>
+            <span className="muted">走势示意与技术解读</span>
+          </div>
+          <div className="morning-chart">
+            <div className="morning-chart-image">
+              <img
+                src="https://banjiu518-1314557698.cos.ap-beijing.myqcloud.com/nickel_price_trend_20251107.png"
+                alt="镍价走势与技术指标分析"
+              />
+            </div>
+            <div className="morning-chart-image">
+              <img
+                src="https://banjiu518-1314557698.cos.ap-beijing.myqcloud.com/nickel_basis_curve_20251107.png"
+                alt="镍期现基差曲线"
+              />
+            </div>
+          </div>
+
+          <div className="morning-chart-analysis">
+            {content.chartAnalysis.map((section) => (
+              <article key={section.title}>
+                <h3>{section.title}</h3>
+                {section.paragraphs.map((paragraph, index) => (
+                  <p key={`${section.title}-${index}`}>{paragraph}</p>
+                ))}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 };

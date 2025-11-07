@@ -22,6 +22,11 @@ export type ReportArticle = {
   excerpt: string;
 };
 
+export type BriefNarrativeSection = {
+  title: string;
+  paragraphs: string[];
+};
+
 export type BriefReportContent = {
   heroTitle: string;
   heroSubtitle: string;
@@ -29,7 +34,8 @@ export type BriefReportContent = {
   summaryMetrics: MetricView[];
   highlights: ReportHighlight[];
   articles: ReportArticle[];
-  narrative?: Array<{
+  narrative?: BriefNarrativeSection[];
+  chartAnalysis?: Array<{
     title: string;
     paragraphs: string[];
   }>;

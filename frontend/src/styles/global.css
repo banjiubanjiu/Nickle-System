@@ -572,18 +572,21 @@ table {
 .morning-report-layout {
   display: grid;
   gap: 24px;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   align-items: stretch;
 }
 
 .morning-report-left {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
+  height: 100%;
 }
 
 .morning-report-left .report-section {
   flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .report-highlights.compact {
@@ -629,6 +632,82 @@ table {
 }
 
 .morning-report-section + .morning-report-section {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.morning-chart-card {
+  padding: 0;
+}
+
+.morning-chart-header {
+  padding: 16px 24px 0;
+}
+
+.morning-chart {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px 24px 24px;
+}
+
+.morning-chart-image {
+  flex: 1 1 560px;
+  max-width: 880px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(9, 17, 31, 0.65);
+}
+
+.morning-chart-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  object-fit: contain;
+}
+
+.morning-chart-text {
+  flex: 1 1 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(232, 242, 255, 0.85);
+  line-height: 1.7;
+}
+
+.morning-chart-text h3 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--dashboard-text-primary);
+}
+
+.morning-chart-text p {
+  margin: 0;
+}
+
+.morning-chart-analysis {
+  padding: 0 24px 20px;
+  color: rgba(232, 242, 255, 0.85);
+  line-height: 1.7;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.morning-chart-analysis h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  color: var(--dashboard-text-primary);
+}
+
+.morning-chart-analysis p {
+  margin: 0;
+}
+
+.morning-chart-analysis article + article {
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
