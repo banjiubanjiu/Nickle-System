@@ -23,6 +23,9 @@ export const MorningDailyReport: FC<MorningDailyReportProps> = ({ content }) => 
         </div>
         <div className="report-hero-meta">
           <span>更新：{content.updatedAt}</span>
+          <button type="button" className="report-export-button">
+            导出晨报
+          </button>
         </div>
       </section>
 
