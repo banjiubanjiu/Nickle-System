@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import "../styles/global.css";
+import "../styles/components/DashboardHeader.css";
 
 // Option describes a generic dropdown item with key/label pair.
 type Option = {

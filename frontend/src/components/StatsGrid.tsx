@@ -1,5 +1,7 @@
 import type { FC } from "react";
 
+import "../styles/components/StatsGrid.css";
+
 // 单条统计指标：文案、数值以及可选单位。
 type Stat = {
   label: string;

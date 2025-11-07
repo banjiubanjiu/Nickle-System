@@ -1,0 +1,35 @@
+.orderbook-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.orderbook-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--font-size-body);
+  color: var(--dashboard-text-secondary);
+}
+
+.orderbook-price {
+  width: 80px;
+  font-size: 18px;
+  color: var(--dashboard-text-primary);
+}
+
+.orderbook-bar {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.05));
+  transition: width 0.3s ease;
+}
+
+.orderbook-bar.sell {
+  background: linear-gradient(90deg, rgba(255, 107, 107, 0.25), rgba(255, 107, 107, 0.05));
+}
+
+.orderbook-bar.buy {
+  background: linear-gradient(90deg, rgba(78, 205, 196, 0.3), rgba(78, 205, 196, 0.05));
+}

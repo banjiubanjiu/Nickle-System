@@ -1,5 +1,7 @@
 import type { FC, ReactNode } from "react";
 
+import "../styles/components/MetricCard.css";
+
 type MetricCardProps = {
   // 指标标题（例如“最新价”）
   label: string;

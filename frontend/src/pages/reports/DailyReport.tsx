@@ -1,6 +1,8 @@
 import type { FC } from "react";
 
 import { MetricCard } from "../../components/MetricCard";
+import "../../styles/pages/reports-base.css";
+import "../../styles/pages/reports-morning.css";
 import type { BriefReportContent, ReportHighlight } from "../../types/reports";
 
 type DailyReportProps = {

@@ -1,0 +1,64 @@
+.yearly-grid {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.yearly-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.yearly-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.yearly-section ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.yearly-section li h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.yearly-section li p {
+  margin: 4px 0 0;
+  color: rgba(232, 242, 255, 0.75);
+  line-height: 1.6;
+}
+
+.yearly-strategy-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.yearly-strategy-card {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 22, 38, 0.55);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.yearly-strategy-card h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.yearly-strategy-card p {
+  margin: 0;
+  color: rgba(232, 242, 255, 0.75);
+  line-height: 1.6;
+}

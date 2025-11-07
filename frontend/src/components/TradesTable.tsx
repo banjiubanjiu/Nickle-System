@@ -1,5 +1,7 @@
 import type { FC } from "react";
 
+import "../styles/components/TradesTable.css";
+
 // 单条成交记录：时间、价格、成交量、方向。
 type Trade = {
   time: string;

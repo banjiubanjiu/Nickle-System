@@ -1,0 +1,131 @@
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.dashboard-container {
+  padding: 28px 40px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1760px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  gap: 32px;
+}
+
+.grid.cols-4 {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.grid.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-card {
+  background: var(--dashboard-panel);
+  border: 1px solid var(--dashboard-panel-border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.dashboard-card h2 {
+  margin: 0;
+  font-size: var(--font-size-h2);
+  font-weight: 600;
+  color: var(--dashboard-text-secondary);
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.muted {
+  color: var(--dashboard-text-secondary);
+  font-size: var(--font-size-label);
+}
+
+.headline {
+  font-size: var(--font-size-h1);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--dashboard-text-primary);
+}
+
+.value-large {
+  font-size: 40px;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+}
+
+.value-medium {
+  font-size: 26px;
+  font-weight: 500;
+}
+
+.trend-up {
+  color: var(--dashboard-profit);
+}
+
+.trend-down {
+  color: var(--dashboard-loss);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-small);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: rgba(0, 212, 255, 0.12);
+  color: var(--dashboard-accent);
+}
+
+.indicator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  font-size: var(--font-size-label);
+  color: var(--dashboard-text-secondary);
+  margin-top: 32px;
+}
+
+.footer span,
+.footer a {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-container {
+    padding: 20px;
+  }
+
+  .headline {
+    font-size: 42px;
+  }
+}

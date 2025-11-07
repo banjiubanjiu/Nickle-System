@@ -1,5 +1,7 @@
 import type { FC } from "react";
 
+import "../styles/components/OrderBookPanel.css";
+
 // 单条盘口信息，包含报价与对应的成交量。
 type OrderItem = {
   price: string;

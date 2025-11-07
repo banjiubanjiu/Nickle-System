@@ -1,6 +1,8 @@
 // Mock 数据生成脚本：演示用途的动态行情。
 // 每次导入都会根据当前北京时间生成 48 小时历史，并默认展示最近 12 小时窗口。
 
+import type { CandlestickData, UTCTimestamp } from "lightweight-charts";
+
 const TOTAL_HOURS = 48;
 const DEFAULT_VISIBLE_HOURS = 12;
 const HOUR_MS = 60 * 60 * 1000;
@@ -55,8 +57,8 @@ const formatPrice = (value: number, fractionDigits = 2) =>
 
 const formatVolume = (value: number) => integerFormatter.format(Math.round(value));
 
-const toUTCTimestamp = (date: Date) =>
-  Math.floor((date.getTime() - date.getTimezoneOffset() * 60 * 1000) / 1000);
+const toUTCTimestamp = (date: Date): UTCTimestamp =>
+  Math.floor((date.getTime() - date.getTimezoneOffset() * 60 * 1000) / 1000) as UTCTimestamp;
 
 type SummaryMetric = {
   label: string;
@@ -66,6 +68,9 @@ type SummaryMetric = {
   trendDirection?: "up" | "down";
 };
 
+type TimelineCandle = (CandlestickData<UTCTimestamp> & { volume: number });
+type VisibleRange = { from: UTCTimestamp; to: UTCTimestamp };
+
 type GenerateConfig = {
   basePrice: number;
   priceUnit: string;
@@ -73,6 +78,24 @@ type GenerateConfig = {
   volumeVariance: number;
   openInterestBase: number;
   openInterestVariance: number;
+};
+
+type Dataset = {
+  meta: { title: string; exchange: string; contract: string; lastUpdated: string };
+  contracts: Array<{ key: string; label: string }>;
+  priceUnit: string;
+  summaryMetrics: SummaryMetric[];
+  orderBook: {
+    bestPrice: string;
+    asks: Array<{ price: string; volume: number }>;
+    bids: Array<{ price: string; volume: number }>;
+  };
+  timelineCandles: TimelineCandle[];
+  timelineVisibleRange?: VisibleRange;
+  priceSeries: Array<{ time: string; value: number }>;
+  volumeSeries: Array<{ time: string; volume: number; openInterest: number }>;
+  sessionStats: SummaryMetric[];
+  trades: Array<{ time: string; price: string; volume: string; side: "买入" | "卖出" }>;
 };
 
 const generateHourlyCandles = (anchor: Date, config: GenerateConfig) => {
@@ -120,7 +143,7 @@ const createDataset = (
   anchor: Date,
   config: GenerateConfig,
   meta: { title: string; exchange: string; contract: string },
-) => {
+): Dataset => {
   const candles = generateHourlyCandles(anchor, config);
   const visibleCandles =
     candles.length >= DEFAULT_VISIBLE_HOURS
@@ -192,11 +215,12 @@ const createDataset = (
     const tradeTime = new Date(now.getTime() - idx * 45 * 1000);
     const base = latestPrice + (Math.random() - 0.5) * 20;
     const volume = 80 + Math.random() * 220;
+    const side: "买入" | "卖出" = idx % 2 === 0 ? "买入" : "卖出";
     return {
       time: formatTimeWithSeconds(tradeTime),
       price: formatPrice(base),
       volume: numberFormatter.format(Number(volume.toFixed(1))),
-      side: idx % 2 === 0 ? "买入" : "卖出",
+      side,
     };
   });
 

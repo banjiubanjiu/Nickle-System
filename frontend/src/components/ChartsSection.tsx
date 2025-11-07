@@ -19,6 +19,9 @@ import {
   type CandlestickData,
   type HistogramData,
   type ISeriesApi,
+  type Range,
+  type Time,
+  type UTCTimestamp,
 } from "lightweight-charts";
 
 type PriceDatum = {
@@ -94,14 +97,16 @@ const buildNiceScale = (values: number[], targetTicks = 6) => {
   };
 };
 
-type CandlePoint = CandlestickData & {
+type VisibleRange = { from: UTCTimestamp; to: UTCTimestamp };
+
+type CandlePoint = CandlestickData<UTCTimestamp> & {
   volume?: number;
 };
 
 type CandlestickChartProps = {
   data: CandlePoint[];
   includeVolume?: boolean;
-  visibleRange?: { from: number; to: number };
+  visibleRange?: VisibleRange;
 };
 
 const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = true, visibleRange }) => {
@@ -109,8 +114,11 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
   const chartRef = useRef<ReturnType<typeof createChart>>();
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick">>();
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram">>();
-  const boundsRef = useRef<{ from: number; to: number } | null>(null);
+  const boundsRef = useRef<VisibleRange | null>(null);
   const windowWidthRef = useRef<number | null>(null);
+
+  const isTimestamp = (value: unknown): value is UTCTimestamp => typeof value === "number";
+  const toTimestamp = (value: number): UTCTimestamp => value as UTCTimestamp;
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -168,8 +176,7 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
           top: 0.85,
           bottom: 0.02,
         },
-        drawTicks: false,
-        drawLabels: false,
+        borderVisible: false,
       });
     }
 
@@ -179,9 +186,9 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
 
     const timeScale = chart.timeScale();
 
-    const clampVisibleRange = (range: { from: number; to: number } | null) => {
+    const clampVisibleRange = (range: Range<Time> | null) => {
       const bounds = boundsRef.current;
-      if (!bounds || !range) {
+      if (!bounds || !range || !isTimestamp(range.from) || !isTimestamp(range.to)) {
         return;
       }
       const width = range.to - range.from;
@@ -190,10 +197,10 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
       }
       const targetWidth = windowWidthRef.current ?? width;
       if (range.to > bounds.to) {
-        const from = Math.max(bounds.to - targetWidth, bounds.from);
+        const from = toTimestamp(Math.max(bounds.to - targetWidth, bounds.from));
         timeScale.setVisibleRange({ from, to: bounds.to });
       } else if (range.from < bounds.from) {
-        const to = Math.min(bounds.from + targetWidth, bounds.to);
+        const to = toTimestamp(Math.min(bounds.from + targetWidth, bounds.to));
         timeScale.setVisibleRange({ from: bounds.from, to });
       }
     };
@@ -225,29 +232,26 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
     candleSeriesRef.current.setData(formatted);
 
     if (formatted.length > 0) {
-      const first = Number(formatted[0].time);
-      const last = Number(formatted[formatted.length - 1].time);
-      if (Number.isFinite(first) && Number.isFinite(last)) {
+      const first = formatted[0].time as UTCTimestamp;
+      const last = formatted[formatted.length - 1].time as UTCTimestamp;
+      if (first !== undefined && last !== undefined) {
         boundsRef.current = { from: first, to: last };
         const timeScale = chartRef.current.timeScale();
         timeScale.applyOptions({ barSpacing: 15, minBarSpacing: 6, rightOffset: 1.5 });
         const fallbackCount = Math.min(12, formatted.length);
-        const fallbackFrom =
-          formatted.length > fallbackCount
-            ? Number(formatted[formatted.length - fallbackCount].time)
-            : first;
-        const defaultRange =
-          visibleRange && Number.isFinite(visibleRange.from) && Number.isFinite(visibleRange.to)
-            ? visibleRange
-            : { from: fallbackFrom, to: last };
+        const fallbackIndex = formatted.length > fallbackCount ? formatted.length - fallbackCount : 0;
+        const fallbackSource = formatted[fallbackIndex] ?? formatted[0];
+        const fallbackFrom = fallbackSource.time as UTCTimestamp;
+        const fallbackRange: VisibleRange = { from: fallbackFrom, to: last };
+        const defaultRange: VisibleRange = visibleRange ?? fallbackRange;
         timeScale.setVisibleRange(defaultRange);
         timeScale.scrollToRealTime();
-        windowWidthRef.current = defaultRange.to - defaultRange.from;
+        windowWidthRef.current = Number(defaultRange.to) - Number(defaultRange.from);
       }
     }
 
     if (includeVolume && volumeSeriesRef.current) {
-      const volumeData: HistogramData[] = data.map((point) => ({
+      const volumeData: HistogramData<UTCTimestamp>[] = data.map((point) => ({
         time: point.time,
         value: point.volume ?? 0,
         color: point.close >= point.open ? "rgba(255, 107, 107, 0.8)" : "rgba(78, 205, 196, 0.8)",
@@ -261,7 +265,7 @@ const CandlestickChart: FC<CandlestickChartProps> = ({ data, includeVolume = tru
 
 type CandleChartCardProps = {
   candles: CandlePoint[];
-  visibleRange?: { from: number; to: number };
+  visibleRange?: VisibleRange;
   unitLabel?: string;
 };
 

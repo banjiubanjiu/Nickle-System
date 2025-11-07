@@ -1,5 +1,7 @@
 import type { FC } from "react";
 
+import "../../styles/pages/dashboard.css";
+
 import { CandleChartCard, SecondaryCharts } from "../../components/ChartsSection";
 import { MetricCard } from "../../components/MetricCard";
 import { OrderBookPanel } from "../../components/OrderBookPanel";
