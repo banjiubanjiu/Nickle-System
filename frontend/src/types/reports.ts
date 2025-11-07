@@ -39,6 +39,11 @@ export type BriefReportContent = {
     title: string;
     paragraphs: string[];
   }>;
+  charts?: Array<{
+    src: string;
+    alt: string;
+    caption?: string;
+  }>;
 };
 
 export type WeeklySection = {

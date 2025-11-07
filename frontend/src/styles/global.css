@@ -734,6 +734,11 @@ table {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.chart-caption {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: rgba(232, 242, 255, 0.75);
+}
 .weekly-layout {
   display: grid;
   gap: 28px;

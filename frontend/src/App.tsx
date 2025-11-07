@@ -5,6 +5,7 @@ import { buildMarketData, type MarketDataset, type MarketKey } from "./data/mock
 import { DashboardHeader, type NavKey } from "./components/DashboardHeader";
 import { RealtimeDashboard } from "./pages/dashboard/RealtimeDashboard";
 import { MorningDailyReport } from "./pages/reports/MorningDailyReport";
+import { DailyReport } from "./pages/reports/DailyReport";
 import { WeeklyReport } from "./pages/reports/WeeklyReport";
 import { MonthlyReport } from "./pages/reports/MonthlyReport";
 import { YearlyReport } from "./pages/reports/YearlyReport";
@@ -326,7 +327,7 @@ const App: FC = () => {
             path="/reports/daily"
             element={
               <ReportLayout updatedAt={morningDailyReports.daily.updatedAt}>
-                <MorningDailyReport content={morningDailyReports.daily} />
+                <DailyReport content={morningDailyReports.daily} />
               </ReportLayout>
             }
           />
