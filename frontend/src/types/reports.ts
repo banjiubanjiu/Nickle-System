@@ -29,6 +29,10 @@ export type BriefReportContent = {
   summaryMetrics: MetricView[];
   highlights: ReportHighlight[];
   articles: ReportArticle[];
+  narrative?: Array<{
+    title: string;
+    paragraphs: string[];
+  }>;
 };
 
 export type WeeklySection = {

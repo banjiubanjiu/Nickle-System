@@ -569,6 +569,70 @@ table {
   box-shadow: 0 0 16px rgba(0, 212, 255, 0.25);
 }
 
+.morning-report-layout {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  align-items: stretch;
+}
+
+.morning-report-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.morning-report-left .report-section {
+  flex: 1 1 auto;
+}
+
+.report-highlights.compact {
+  gap: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.report-highlight.compact {
+  padding: 12px 14px;
+  gap: 6px;
+}
+
+.morning-report-brief {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.morning-report-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: rgba(232, 242, 255, 0.85);
+  line-height: 1.7;
+}
+
+.morning-report-body p {
+  margin: 0;
+}
+
+.morning-report-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.morning-report-section h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--dashboard-text-primary);
+}
+
+.morning-report-section + .morning-report-section {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .weekly-layout {
   display: grid;
   gap: 28px;

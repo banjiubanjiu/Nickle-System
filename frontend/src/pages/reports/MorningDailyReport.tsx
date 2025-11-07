@@ -39,48 +39,69 @@ export const MorningDailyReport: FC<MorningDailyReportProps> = ({ content }) => 
         ))}
       </section>
 
-      <div className="report-grid">
-        <section className="dashboard-card report-section">
-          <div className="flex-between">
-            <h2>焦点速览</h2>
-            <span className="muted">重点事件 · 风险提示</span>
-          </div>
-          <ul className="report-highlights">
-            {content.highlights.map((item) => (
-              <li key={item.title} className="report-highlight">
-                <div className="report-highlight-header">
-                  <span className={`report-highlight-tag ${impactClassMap[item.impact]}`}>{item.tag}</span>
-                  <h3>{item.title}</h3>
-                </div>
-                <p>{item.summary}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="dashboard-card report-section">
-          <div className="flex-between">
-            <h2>精选研报</h2>
-            <span className="muted">覆盖主流机构观点</span>
-          </div>
-          <div className="report-articles">
-            {content.articles.map((article) => (
-              <article key={article.title} className="report-article">
-                <header>
-                  <h3>{article.title}</h3>
-                  <div className="report-article-meta">
-                    <span>{article.source}</span>
-                    <span>{article.publishedAt}</span>
+      <div className="morning-report-layout">
+        <div className="morning-report-left">
+          <section className="dashboard-card report-section morning-focus">
+            <div className="flex-between">
+              <h2>焦点速览</h2>
+              <span className="muted">重点事件 · 风险提示</span>
+            </div>
+            <ul className="report-highlights compact">
+              {content.highlights.map((item) => (
+                <li key={item.title} className="report-highlight compact">
+                  <div className="report-highlight-header">
+                    <span className={`report-highlight-tag ${impactClassMap[item.impact]}`}>{item.tag}</span>
+                    <h3>{item.title}</h3>
                   </div>
-                </header>
-                <p>{article.excerpt}</p>
-                <button type="button" className="report-article-link">
-                  查看详情
-                </button>
-              </article>
-            ))}
-          </div>
-        </section>
+                  <p>{item.summary}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="dashboard-card report-section morning-articles">
+            <div className="flex-between">
+              <h2>精选研报</h2>
+              <span className="muted">覆盖主流机构观点</span>
+            </div>
+            <div className="report-articles">
+              {content.articles.map((article) => (
+                <article key={article.title} className="report-article">
+                  <header>
+                    <h3>{article.title}</h3>
+                    <div className="report-article-meta">
+                      <span>{article.source}</span>
+                      <span>{article.publishedAt}</span>
+                    </div>
+                  </header>
+                  <p>{article.excerpt}</p>
+                  <button type="button" className="report-article-link">
+                    查看详情
+                  </button>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {content.narrative ? (
+          <section className="dashboard-card morning-report-brief">
+            <div className="flex-between">
+              <h2>今日晨报</h2>
+              <span className="muted">文字速览</span>
+            </div>
+            <div className="morning-report-body">
+              {content.narrative.map((section) => (
+                <article key={section.title} className="morning-report-section">
+                  <h3>{section.title}</h3>
+                  {section.paragraphs.map((paragraph, index) => (
+                    <p key={`${section.title}-${index}`}>{paragraph}</p>
+                  ))}
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );
