@@ -15,10 +15,14 @@ Optional flags:
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import time
-from typing import List, Tuple
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+from backend.src.logging import StorageLoggingServer, start_storage_logging_server
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -40,9 +44,12 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _launch_process(label: str, command: List[str]) -> subprocess.Popen:
+def _launch_process(label: str, command: List[str], env: Optional[Dict[str, str]] = None) -> subprocess.Popen:
     print(f"[run_all] starting {label}: {' '.join(command)}")
-    return subprocess.Popen(command)
+    process_env = os.environ.copy()
+    if env:
+        process_env.update(env)
+    return subprocess.Popen(command, env=process_env)
 
 
 def main() -> None:
@@ -54,10 +61,20 @@ def main() -> None:
 
     processes: List[Tuple[str, subprocess.Popen]] = []
 
+    log_server: Optional[StorageLoggingServer] = None
+
+    try:
+        log_server = start_storage_logging_server(Path("logs") / "storage.log")
+        shared_env = log_server.env()
+        print("[run_all] storage logging queue initialised")
+    except Exception as exc:  # pragma: no cover - defensive fallback
+        shared_env = {}
+        print(f"[run_all] failed to start logging queue ({exc}), falling back to per-process logging")
+
     try:
         if not args.no_scheduler:
             scheduler_cmd = [sys.executable, "-m", "backend.src.tasks.scheduler"]
-            processes.append(("scheduler", _launch_process("scheduler", scheduler_cmd)))
+            processes.append(("scheduler", _launch_process("scheduler", scheduler_cmd, shared_env)))
 
         if not args.no_api:
             uvicorn_cmd = [
@@ -74,7 +91,7 @@ def main() -> None:
                 uvicorn_cmd.append("--reload")
             if args.uvicorn_extra:
                 uvicorn_cmd.extend(args.uvicorn_extra)
-            processes.append(("uvicorn", _launch_process("uvicorn", uvicorn_cmd)))
+            processes.append(("uvicorn", _launch_process("uvicorn", uvicorn_cmd, shared_env)))
 
         if not processes:
             print("[run_all] nothing to run.")
@@ -109,6 +126,8 @@ def main() -> None:
                 except subprocess.TimeoutExpired:
                     print(f"[run_all] killing {label}")
                     process.kill()
+        if log_server is not None:
+            log_server.stop()
 
 
 if __name__ == "__main__":
