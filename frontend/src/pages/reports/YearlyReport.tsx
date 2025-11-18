@@ -101,6 +101,26 @@ const SLIDE_SECTIONS: SlideSectionConfig[] = [
       },
     ],
   },
+  {
+    id: "08",
+    chartConfigs: [
+      {
+        title: "印尼冰镍产量（万吨镍）",
+        yAxisDomain: [0, 4],
+        yAxisTickCount: 5,
+        yAxisTicks: [0, 1, 2, 3, 4],
+        xAxisAngle: -90,
+        xAxisHeight: 90,
+      },
+      {
+        title: "印尼冰镍在产产线（条）",
+        yAxisDomain: [0, 7],
+        yAxisTickCount: 8,
+        yAxisTicks: [0, 1, 2, 3, 4, 5, 6, 7],
+        stackBars: false,
+      },
+    ],
+  },
 ];
 
 
