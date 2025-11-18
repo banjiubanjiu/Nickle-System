@@ -1,0 +1,40 @@
+{
+  "slide": 10,
+  "title": "数据来源：安泰科",
+  "charts": [
+    {
+      "chartPath": "ppt/charts/chart13.xml",
+      "chartType": "barChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet12.xlsx",
+      "categoryLabels": [
+        "青山集团",
+        "华友钴业",
+        "邦普时代",
+        "莫迪卡SLNC"
+      ],
+      "categoryRange": "MHP!$J$19:$J$22",
+      "series": [
+        {
+          "name": "产能",
+          "values": [
+            27.0,
+            18.0,
+            12.0,
+            9.0
+          ],
+          "range": "MHP!$K$19:$K$22",
+          "color": null
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false,
+      "valueRange": {
+        "dataMin": 9.0,
+        "dataMax": 27.0,
+        "suggestedMin": 9,
+        "suggestedMax": 28
+      }
+    }
+  ]
+}

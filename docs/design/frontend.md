@@ -2,7 +2,7 @@
 
 ## 1. 技术栈与目标
 - **框架**：React 18 + TypeScript，使用 Vite 作为构建工具（见 `frontend/package.json`）。
-- **目标**：搭建面向交易大屏的单页应用，展示镍金属行情的实时/历史数据、图表和成交明细。当前仍处于演示阶段，后端 API 尚未完全联调。
+- **目标**：搭建面向交易大屏的单页应用，展示镍金属行情的实时/历史数据、图表和成交明细。当前首页的八张指标卡已经通过 `services/dashboard.ts` 调用后端 `health/latest` 接口轮询更新，若请求失败则自动回退到 mock 数据，其余图表仍临时使用 mock 数据，后续会逐步替换。
 - **主要依赖**：
   - `lightweight-charts`：渲染小时级 K 线与成交量叠加。
   - `recharts`：绘制面积图、柱状图等辅助可视化。
@@ -23,7 +23,8 @@ frontend/
 ## 3. 数据与状态流
 - 页面级状态仅存在于 `App.tsx`：`selectedExchange`、`selectedContract`。
 - `buildMarketData()` 返回 mock 数据集与下拉选项；子组件通过 props 接收数据，暂未引入全局状态库。
-- 后续接入真实 API 时计划使用 Axios + TanStack Query 管理请求、缓存与轮询（详见 `frontend/README.md` 与 `docs/design/mvp-front-plan.md`）。
+- `services/dashboard.ts` 封装了 Axios 客户端与 `fetchHealth/fetchLatest/fetchIntraday/fetchDaily`，`App.tsx` 根据请求结果刷新指标并在异常时恢复为 mock 数据。
+- TanStack Query 仍在规划中，用于抽离请求缓存、轮询与重试策略，待所有模块迁移到真实接口后统一治理。
 
 ## 4. Mock 数据策略
 - 加载瞬间记录北京时间 `now`，生成 **过去 48 小时、1 小时粒度** 的 K 线数据，并将默认可视窗口限定在最近 12 小时；用户可向左滚动查看更多历史，但无法向未来滚动。
@@ -53,10 +54,10 @@ frontend/
 - 本地开发：`npm install && npm run dev`（默认 `http://127.0.0.1:5173`）。
 - 生产构建：`npm run build`（先 TypeScript 校验，再执行 `vite build`，产物位于 `dist/`）。
 - 目前尚未启用 ESLint/Prettier；后续可根据项目稳定度逐步加入。
-- 联调后端时，可在 `vite.config.ts` 的 `server.proxy` 中配置 API 代理。
+- API 地址通过 `.env.local` / `VITE_API_BASE_URL` 配置，默认指向 `http://127.0.0.1:8000`，常规开发无需额外代理；如需自定义域名，可在 `vite.config.ts` 的 `server.proxy` 中补充。
 
 ## 9. 后续计划
-1. 接入真实调度/API 数据源，替换 mock 逻辑。
+1. 将图表、盘口、成交等模块逐步切换为真实 intraday/daily API 数据，并保留 mock 作为离线演示模式。
 2. 引入 TanStack Query（或等价方案）管理请求缓存、轮询与错误处理。
 3. 提升无障碍与响应式体验（键盘焦点、断点适配、对比度等）。
 4. 补充 Lint/Format 规则及更细的工程治理（代码拆分、性能优化）。

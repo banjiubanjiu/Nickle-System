@@ -1,0 +1,74 @@
+{
+  "slide": 19,
+  "title": "数据来源：安泰科  ISSF",
+  "charts": [
+    {
+      "chartPath": "ppt/charts/chart23.xml",
+      "chartType": "pie3DChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet22.xlsx",
+      "categoryLabels": [
+        "中国",
+        "印尼",
+        "印度",
+        "日本",
+        "韩国",
+        "欧洲",
+        "北美",
+        "其他"
+      ],
+      "categoryRange": "Sheet9!$N$11:$N$18",
+      "series": [
+        {
+          "name": "占比",
+          "values": [
+            0.6322036545369358,
+            0.0787131032328596,
+            0.07246603154771201,
+            0.03545213181321256,
+            0.032484772762767455,
+            0.09651725753553023,
+            0.030298297672965796,
+            0.021864750898016556
+          ],
+          "range": "Sheet9!$P$11:$P$18",
+          "color": null
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false
+    },
+    {
+      "chartPath": "ppt/charts/chart24.xml",
+      "chartType": "barChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet23.xlsx",
+      "categoryLabels": [
+        2020.0,
+        2021.0,
+        2022.0,
+        2023.0,
+        2024.0,
+        "2025E"
+      ],
+      "categoryRange": "Sheet9!$B$5:$B$10",
+      "series": [
+        {
+          "name": "全球不锈钢产量",
+          "values": [
+            5145.0,
+            5870.0,
+            5676.0,
+            6029.0,
+            6400.0,
+            6600.0
+          ],
+          "range": "Sheet9!$C$5:$C$10",
+          "color": "#08599C"
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false
+    }
+  ]
+}

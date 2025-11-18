@@ -1,0 +1,70 @@
+{
+  "slide": 25,
+  "title": "印尼镍矿山的火法开采现金成本在20-25美元/吨波动，湿法矿现金成本则在9-13美元/吨波动；目前火法矿成交价格38-44美元/吨（FOB），湿法矿成交价格16-18美元/吨（FOB）。",
+  "charts": [
+    {
+      "chartPath": "ppt/charts/chart33.xml",
+      "chartType": "lineChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet32.xlsx",
+      "categoryLabels": [
+        "Q124",
+        "Q224",
+        "Q324",
+        "Q424",
+        "Q125",
+        "Q225"
+      ],
+      "categoryRange": "Sheet16!$B$6:$B$11",
+      "series": [
+        {
+          "name": "印尼SCM火法镍矿现金成本",
+          "values": [
+            28.4,
+            24.9,
+            23.8,
+            21.6,
+            24.6,
+            24.0
+          ],
+          "range": "Sheet16!$C$6:$C$11",
+          "color": "#08599C"
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false
+    },
+    {
+      "chartPath": "ppt/charts/chart34.xml",
+      "chartType": "lineChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet33.xlsx",
+      "categoryLabels": [
+        "Q124",
+        "Q224",
+        "Q324",
+        "Q424",
+        "Q125",
+        "Q225"
+      ],
+      "categoryRange": "Sheet16!$B$20:$B$25",
+      "series": [
+        {
+          "name": "印尼SCM湿法镍矿现金成本",
+          "values": [
+            11.5,
+            12.1,
+            9.9,
+            9.0,
+            12.7,
+            10.9
+          ],
+          "range": "Sheet16!$C$20:$C$25",
+          "color": "#08599C"
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false
+    }
+  ]
+}

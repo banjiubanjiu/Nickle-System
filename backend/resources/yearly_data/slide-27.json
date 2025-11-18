@@ -1,0 +1,38 @@
+{
+  "slide": 27,
+  "title": "虽然硫磺价格大幅上涨推高HPAL湿法项目成本，但印尼的湿法项目依然维持较好的利润；随着钴价大幅上涨，预计下半年印尼湿法项目利润将继续维持高位。",
+  "charts": [
+    {
+      "chartPath": "ppt/charts/chart37.xml",
+      "chartType": "lineChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet35.xlsx",
+      "categoryLabels": [
+        "2024Q1",
+        "2024Q2",
+        "2024Q3",
+        "2024Q4",
+        "2025Q1",
+        "2025Q2"
+      ],
+      "categoryRange": "Sheet18!$B$4:$B$9",
+      "series": [
+        {
+          "name": "HNC湿法现金成本",
+          "values": [
+            7155.0,
+            7155.0,
+            6841.0,
+            7311.0,
+            7197.0,
+            7881.0
+          ],
+          "range": "Sheet18!$C$4:$C$9",
+          "color": "#08599C"
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false
+    }
+  ]
+}

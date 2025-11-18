@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from swagger_ui_bundle import swagger_ui_path
 
 from backend.src.api.deps import ensure_storage, get_intraday_reader
-from backend.src.api.routers import dashboard
+from backend.src.api.routers import dashboard, yearly
 from backend.src.config import get_intraday_interval_seconds, get_retention_hours
 
 LOGGER = logging.getLogger("nickel.api")
@@ -62,6 +62,7 @@ def health_check(intraday=Depends(get_intraday_reader)) -> Dict[str, Any]:
 
 
 app.include_router(dashboard.router)
+app.include_router(yearly.router)
 
 
 @app.get("/", include_in_schema=False)

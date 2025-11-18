@@ -1,0 +1,94 @@
+{
+  "slide": 7,
+  "title": "NPI：印尼产能增长变缓",
+  "charts": [
+    {
+      "chartPath": "ppt/charts/chart7.xml",
+      "chartType": "barChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet6.xlsx",
+      "categoryLabels": [
+        "IMIP",
+        "IWIP",
+        "德龙园区",
+        "Obi岛",
+        "振石",
+        "华迪",
+        "其他"
+      ],
+      "categoryRange": "NPI!$L$16:$L$22",
+      "series": [
+        {
+          "name": "投建产线",
+          "values": [
+            51.0,
+            56.0,
+            80.0,
+            28.0,
+            12.0,
+            10.0,
+            10.0
+          ],
+          "range": "NPI!$M$16:$M$22",
+          "color": "#639629"
+        },
+        {
+          "name": "在产产线",
+          "values": [
+            50.0,
+            54.0,
+            71.0,
+            22.0,
+            12.0,
+            4.0,
+            5.0
+          ],
+          "range": "NPI!$N$16:$N$22",
+          "color": "#EF0808"
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false,
+      "valueRange": {
+        "dataMin": 4.0,
+        "dataMax": 80.0,
+        "suggestedMin": 4,
+        "suggestedMax": 81
+      }
+    },
+    {
+      "chartPath": "ppt/charts/chart8.xml",
+      "chartType": "barChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet7.xlsx",
+      "categoryLabels": [
+        2022.0,
+        2023.0,
+        2024.0,
+        "2025E"
+      ],
+      "categoryRange": "Sheet3!$B$64:$B$67",
+      "series": [
+        {
+          "name": "印尼新增NPI产线情况（条）",
+          "values": [
+            50.0,
+            42.0,
+            32.0,
+            12.0
+          ],
+          "range": "Sheet3!$C$64:$C$67",
+          "color": "#E7BA10"
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false,
+      "valueRange": {
+        "dataMin": 12.0,
+        "dataMax": 50.0,
+        "suggestedMin": 12,
+        "suggestedMax": 51
+      }
+    }
+  ]
+}

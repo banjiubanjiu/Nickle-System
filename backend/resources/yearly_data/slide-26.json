@@ -1,0 +1,156 @@
+{
+  "slide": 26,
+  "title": "印尼NPI产能继续增加，但是受制于原辅料价格上涨、镍矿品位下降等因素，产品成本压缩空间逐渐缩小；自有矿山镍铁企业现金成本目前在9800-11000美元/吨镍，折合人民币800-900元/镍；目前NPI成交价格940-950元/镍，完全依赖外购矿生产的企业陷入亏损，印尼部分企业选择减停产。",
+  "charts": [
+    {
+      "chartPath": "ppt/charts/chart35.xml",
+      "chartType": "lineChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet34.xlsx",
+      "categoryLabels": [
+        "Q12022",
+        "Q22022",
+        "Q32022",
+        "Q42022",
+        "Q12023",
+        "Q22023",
+        "Q32023",
+        "Q42023",
+        "Q12024",
+        "Q22024",
+        "Q32024",
+        "Q42024",
+        "Q12025",
+        "Q22025"
+      ],
+      "categoryRange": "Sheet17!$C$5:$C$18",
+      "series": [
+        {
+          "name": "Hengjaya Nickel ",
+          "values": [
+            12023.0,
+            14597.0,
+            13879.0,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            11131.0,
+            11629.0,
+            11239.0,
+            10593.0,
+            11150.0
+          ],
+          "range": "Sheet17!$D$5:$D$18",
+          "color": "#08599C"
+        },
+        {
+          "name": "Ranger Nickel",
+          "values": [
+            11916.0,
+            14338.0,
+            14150.0,
+            13754.0,
+            15161.0,
+            13005.0,
+            11242.0,
+            10952.0,
+            10342.0,
+            11309.0,
+            11794.0,
+            11387.0,
+            10802.0,
+            11192.0
+          ],
+          "range": "Sheet17!$E$5:$E$18",
+          "color": "#EF0808"
+        },
+        {
+          "name": "Angel Nickel",
+          "values": [
+            null,
+            14550.0,
+            13167.0,
+            11769.0,
+            11888.0,
+            10907.0,
+            9467.0,
+            9587.0,
+            8797.0,
+            9071.0,
+            10785.0,
+            10396.0,
+            9643.0,
+            10343.0
+          ],
+          "range": "Sheet17!$F$5:$F$18",
+          "color": "#4BACC6"
+        },
+        {
+          "name": "Oracle Nickel",
+          "values": [
+            null,
+            null,
+            null,
+            null,
+            14605.0,
+            12794.0,
+            9973.0,
+            9671.0,
+            9411.0,
+            9914.0,
+            10367.0,
+            10200.0,
+            9520.0,
+            9724.0
+          ],
+          "range": "Sheet17!$G$5:$G$18",
+          "color": "#52596B"
+        },
+        {
+          "name": "Merdeka",
+          "values": [
+            12279.0,
+            13489.0,
+            13967.0,
+            13799.0,
+            15466.0,
+            13460.0,
+            11616.0,
+            10909.0,
+            10223.0,
+            10370.0,
+            10776.0,
+            10037.0,
+            10053.0,
+            9719.0
+          ],
+          "range": "Sheet17!$H$5:$H$18",
+          "color": "#639629"
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false
+    },
+    {
+      "chartPath": "ppt/charts/chart36.xml",
+      "chartType": "barChart",
+      "title": "美元",
+      "workbook": null,
+      "categoryLabels": [],
+      "categoryRange": "Sheet6!$A$2:$A$15",
+      "series": [
+        {
+          "name": "NPI利润（右）",
+          "values": [],
+          "range": "Sheet6!$D$2:$D$15",
+          "color": "#4BACC6"
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false
+    }
+  ]
+}

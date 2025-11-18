@@ -1,0 +1,88 @@
+{
+  "slide": 17,
+  "title": "海外其他地区镍产能出清接近尾声",
+  "charts": [
+    {
+      "chartPath": "ppt/charts/chart22.xml",
+      "chartType": "barChart",
+      "title": null,
+      "workbook": "ppt/embeddings/Microsoft_Excel_Worksheet21.xlsx",
+      "categoryLabels": [
+        2019.0,
+        2020.0,
+        2021.0,
+        2022.0,
+        2023.0,
+        2024.0,
+        "2025E"
+      ],
+      "categoryRange": "Sheet8!$B$5:$B$11",
+      "series": [
+        {
+          "name": "全球镍铁产量",
+          "values": [
+            40.8,
+            38.4,
+            37.9,
+            34.1,
+            27.7,
+            20.2,
+            19.5
+          ],
+          "range": "Sheet8!$C$5:$C$11",
+          "color": "#08599C"
+        },
+        {
+          "name": "全球精炼镍产量",
+          "values": [
+            93.21,
+            91.69,
+            85.23,
+            88.5,
+            95.06,
+            107.08,
+            113.1
+          ],
+          "range": "Sheet8!$D$5:$D$11",
+          "color": "#EF0808"
+        },
+        {
+          "name": "全球NPI产量",
+          "values": [
+            95.9,
+            108.3,
+            129.0,
+            154.7,
+            180.0,
+            178.0,
+            183.0
+          ],
+          "range": "Sheet8!$E$5:$E$11",
+          "color": "#4BACC6"
+        },
+        {
+          "name": "全球镍盐产量",
+          "values": [
+            17.0,
+            18.0,
+            22.0,
+            36.0,
+            47.0,
+            48.0,
+            52.0
+          ],
+          "range": "Sheet8!$F$5:$F$11",
+          "color": "#52596B"
+        }
+      ],
+      "notes": [],
+      "hasDateAxis": false,
+      "valueRange": {
+        "dataMin": 17.0,
+        "dataMax": 183.0,
+        "suggestedMin": 10,
+        "suggestedMax": 200
+      }
+    }
+  ]
+}
